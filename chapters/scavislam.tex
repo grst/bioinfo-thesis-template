@@ -1,0 +1,51 @@
+\chapter{SLAM Framework}
+\label{chapter:slam_framework}
+
+This chapter will describe the ScaViSLAM system
+
+\section{Frontend}
+\begin{itemize}
+\itemsep0em
+ \item Visual Odometry
+ \item Tracking points
+ \item Creates Keyframes
+\end{itemize}
+
+\section{Backend}
+\begin{itemize}
+\itemsep0em
+ \item Contains the entire graph (not in g2o format)
+ \item Performs some bundle adjustment
+ \item Acts as a wrapper for g2o
+\end{itemize}
+
+\section{Place Recognition}
+\begin{itemize}
+\itemsep0em
+ \item searches through all keyframes for place matches
+ \item Geometry check
+ \item Adds contraints to graph
+\end{itemize}
+
+\section{Graph Optimization}
+
+\subsection{SLAM graph theory}
+\subsection{Non linear Optimization}
+\subsection{g2o}
+\subsection{Graph description}
+\begin{itemize}
+\itemsep0em
+ \item SE(3) keyframes
+ \item SE(3) keyframe-keyframe edge
+ \item 3D Vector Landmark
+ \item 3D Vector UVU reprojection keyframe-landmark edge
+\end{itemize}
+
+\subsection{Double Window Graph Optimization}
+\begin{itemize}
+\itemsep0em
+ \item B.A. inner window
+ \item Pose-Pose outer window
+ \item metrics to define windows
+ \item ensures constant graph optimize time (novel from this approach)
+\end{itemize}

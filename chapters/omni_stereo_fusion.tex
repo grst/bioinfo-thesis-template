@@ -1,0 +1,17 @@
+\chapter{Omni Stereo Camera Fusion}
+\label{chapter:omni_stereo_fusion}
+
+This chapter will outline my pipeline.  To summarize:
+
+\begin{itemize}
+\itemsep0em
+ \item omni-omni matching
+ \item 5 point algorithm, transformation and 3d points
+ \item circular matching between left/right/omni
+ \item re triangulate points which are matched with stereo
+ \item calculate scale offset by comparing 3d stereo point with non metric triangulated point
+ \item repeat over all points, calculate a robust mean scale offset
+ \item apply offset to transform from omni-omni. Add it to the graph
+\end{itemize}
+
+
