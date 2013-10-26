@@ -1,6 +1,7 @@
 /main.pdf
 /auto/
 
+*.pdf
 *.glo
 *.aux
 *.toc
@@ -11,3 +12,5 @@
 *.bbl
 *.lof
 *.lot
+*~
+*backup
