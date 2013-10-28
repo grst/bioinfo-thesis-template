@@ -14,18 +14,64 @@ Brief description of SE(3) and SO(3)
 
 \section{Camera Models}
 
-In order to utilise a camera as a sensor, a mapping between camera coordinates and world coordinates
-needs to be derived.  To achieve this mapping a model of the camera is required.  This section will
-cover all the different types of cameras used in this work and corresponding camera models for
-each. 
+In order to utilise a camera as a sensor, a mapping between image coordinates and world
+coordinates needs to be derived.  This allows observations of the camera to be transformed into
+meaningful measurements.  To achieve this mapping a sensor model of the camera is required. This
+section will cover all the different types of cameras used in this work and corresponding camera
+models for each. 
 
 \subsection{Pinhole Camera Model}
+
+The pinhole camera model is the most basic and common of camera models used in computer vision.  It
+describes the mathematical relationship between the coordinates of a 3D point in the world and its
+projection onto an image plane.  This model assumes the aperture of the camera to be an ideal
+pinhole. It does not consider lenses used to focus light which in reality result in lense
+distortion.  It does also not take into account sensor quantization apparent in using a modern
+digital CCD sensor. Nevertheless it still provides a sufficient model of camera projection for this
+work, and practical considerations such as image size, resolution and lense distortion can be
+compensated for.
+
+A pinhole camera is assumed to be a sealed box with a pinhole aperture on one side, and the image
+plane, or image sensor on the other side.  Having a small aperture blocks most of the light rays
+from objects in the world and allows a focused and inverted image of the world to be recorded. 
+In this case the focal point is the aperture and the focal length is the distance from the
+aperture to the sensor. [Explain optical center (aperture) principle point (middle of imager)
+principle axis (z axis), image plane] . fig. whatever. For all intensive purposes, this model can
+be redrawn as in fig. whatever whatever. The image plane is inverted and shown reflected in front
+the of the camera.  As long as the focal length can be determined, it is then trivial to calculate
+coordinates on the sensor for a given ray or world coordinate using simple geometry. Sensor
+coordinates can then be converted to image coordinates given CCD size and resolution.
+
+image of pinhole camera with inverted image
+
+image of pinhole camera with image plane mirrored
+
+Talk about requirement of lense, how it works, lense distortion.
+
+Talk about homongenous coords.
 
 \begin{figure}[h!]
   \caption{Pinhole Camera}
   \centering
     \includegraphics[width=0.5\textwidth]{chapters/images/pinhole_camera}
 \end{figure}
+
+\begin{equation}
+ \begin{pmatrix}
+  u \\
+  v \\
+  1 
+ \end{pmatrix} =
+ \begin{pmatrix}
+  f_x & 0 & c_x \\
+  0 & f_y & c_y \\
+  0 & 0   & 1 
+ \end{pmatrix}
+ \begin{pmatrix}
+  X \\ Y \\ Z
+ \end{pmatrix}
+\end{equation}
+
 
 \subsection{Stereo Camera}
 
@@ -38,8 +84,10 @@ Leave this to last.  Flir may (probably) get left out
 
 \subsection{Feature point detection and extraction}
 
-Outline what is feature point detection, description and matching, why we need it.  Mention SIFT
-and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite the ETH paper. 
+Outline what is feature point detection, description and matching, why we need
+it.  Mention SIFT
+and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite
+the ETH paper. 
 Mention a bunch of other descriptors, cite them as well.
 
 \subsection{RANSAC}
@@ -68,7 +116,8 @@ Bag of words
 
 \section{Visual SLAM}
 
-Cover this in abstract terms.  Talk about the theory, not implemtation.  Mention PTAM and cite it.
+Cover this in abstract terms.  Talk about the theory, not implemtation.  Mention
+PTAM and cite it.
 No g2o here.
 
 \subsection{Keyframe SLAM}
