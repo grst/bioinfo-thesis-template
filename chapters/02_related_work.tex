@@ -21,6 +21,9 @@ section will cover all the different types of cameras used in this work and corr
 models for each. 
 
 \subsection{Pinhole Camera Model}
+\label{subsec:pinhole_cam}
+
+%TODO: references
 
 The pinhole camera model is the most basic and common of camera models used in computer vision.  It
 describes the mathematical relationship between the coordinates of a 3D point in the world and its
@@ -70,6 +73,8 @@ also performed in one step.
 
 \subsection{Lense Distortion}
 
+%TODO: references
+
 The problem with using a pinhole camera in practice is that it does not allow enough light to into
 the camera, requiring longer exposure time and therefore blurring in the presence of movement. 
 Therefore a double convex lense is used to focus more light rays onto the sensor and allowing a
@@ -89,7 +94,7 @@ compensated for}
 
 \subsection{Homogeneous coordinates}
 
-%%TODO: homogeneous coords
+%%TODO: homogeneous coordinates
 
 \begin{equation}
  \begin{pmatrix}
@@ -112,12 +117,15 @@ compensated for}
 
 \subsection{Omni-directional Camera}
 
+% ask matthias for literature
+
 \subsection{Flir}
 Leave this to last.  Flir may (probably) get left out
 
 \section{Computer Vision Basics}
 
 \subsection{Feature point detection and extraction}
+\label{subsec:features}
 
 Outline what is feature point detection, description and matching, why we need
 it.  Mention SIFT
@@ -126,13 +134,14 @@ the ETH paper.
 Mention a bunch of other descriptors, cite them as well.
 
 \subsection{RANSAC}
+\label{subsec:RANSAC}
 
 explain this cos its easy and fun.  Cite a paper
 
 \subsection{Geometry estimation}
 
 \subsubsection{5 point algorithm}
-
+\label{subsec:5point}
 ask for matthias for relavent literature
 
 \subsubsection{Point triangulation}
@@ -140,6 +149,7 @@ ask for matthias for relavent literature
 ask for matthias for relavent literature
 
 \subsubsection{Stereo pose estimation}
+\label{subsec:horn}
 
 Umeyama (PCL) \newline 
 Horn (UVM)
@@ -151,10 +161,89 @@ Bag of words
 
 \section{Visual SLAM}
 
-Cover this in abstract terms.  Talk about the theory, not implemtation.  Mention
-PTAM and cite it.
-No g2o here.
+%Cover this in abstract terms.  Talk about the theory, not implemtation.  Mention
+%PTAM and cite it.
+%No g2o here.
+
+Simulataneous Localization and Mapping (SLAM) is the technique of building a map of a previously
+unexplored area whilst simultaneously determining a position (localizing) within that map.  The
+traditional approach for SLAM can be split into 4 steps.
+\begin{enumerate} \itemsep1pt \parskip0pt \parsep0pt
+ \item Feature extraction
+ \item Data association
+ \item Pose estimation
+ \item Global Optimization
+\end{enumerate}
+
+%TODO: cite kalman filter
+Feature extraction involves finding unique features within the sensor data, also known as
+landmarks, which can be later in future sensor measurements.  Data association is the process of
+matching these landmarks over multiple sensor readings, in essence tracking them.  Pose estimation
+involves using the information of how multiple landmarks moved over time with respect to the
+robot/sensor in order to determine how the robot moved with respect to those landmarks.  Finally,
+having determined a map of landmarks, and a pose with respect to those landmarks, a global
+optimization, or bundle adjustment, over all landmarks and robot poses may be performed in order to
+produce a globally consistent map and trajectory.  In the past this has commonly been done by using
+a kalman filter (cite) and by adding all landmarks to the system state.  In more recent times graph
+optimization approaches have become popular as they scale much better to larger maps.
+
+SLAM has taken many forms depending on sensors available. Visual SLAM denotes performing SLAM using
+some kind of camera.  In recent times, a plethora of visual SLAM algorithms for monocular cameras
+(cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras
+(rgbdslam, kinfu, kintinuous) have been developed.  A keyframe SLAM system similar in concept to the
+PTAM approach has been utilised as the basis for this work.  The basic operation for this style of
+SLAM will be outlined here.
+
+\subsection{Basic VSLAM pipeline}
+
+The following is a description of 
+
+The feature extraction in Visual SLAM involves using image feature detectors/descriptors as
+outlined in section \ref{subsec:features}.  These features may then be referred to as
+landmarks. For a single observation of a landmark from one frame of a single camera, one can
+determine a 3D ray from the current camera pose by making use of the camera model as outlined in
+section \ref{subsec:pinhole_cam}.  Multiple observations from multiple frames allows for multiple
+rays to intersect at this landmark, thus a 3D position of the landmark may be estimated using
+triangulation. In the case of a stereo camera, the 3D estimate more or less comes for free, as a
+landmarks may be triangulated from left and right frame.
+
+The data association stage is performed by doing feature matching across different camera frames.
+Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) 
+This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of monocular SLAM
+(2D-2D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D
+correspondances). The model in this case is the 6 DoF transform between frames. The error is
+calculated by projecting landmarks from one frame to the next by applying the transformation to each
+of them. The error is then the sum of the distances between points of one frame, and the
+corresponding points transformed to that same frame. \ref{eq:ransac_error}
+
+\begin{figure}
+ \centering
+ \begin{math}
+  e = \sum\limits_{p_i} p^a_i - _aT^b \cdot p^b_i
+ \end{math}
+ \caption{RANSAC error function.  this formula sucks needs formatting}
+ \label{eq:ransac_error}
+\end{figure}
+
+
+Bundle adjustment over all landmarks and camera poses is commonly achieved with a graph
+optimization. This will be expanded on in sec \ref{subsec:graph_slam}
 
 \subsection{Keyframe SLAM}
 
+The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have
+them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. 
+This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that
+keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera
+with respect to that keyframe.  If the camera moves or rotates a significant distance away from
+the active keyframe, a new keyframe will be created with a known transformation to the previous
+keyframe.
+
+The intent is to have a fast localization thread that runs in realtime providing an accurate pose
+estimation with respect to the keyframe.  The mapping thread that deals with the keyframe runs at a
+much lower framerate, and handles changing the keyframe, global optimization(?), something else. 
+The overall outcome is a system that provides an accurate pose in global coordinates with a fast
+update rate, as well as a globally consistent map.
+
 \subsection{Graph SLAM}
+\label{subsec:graph_slam}
