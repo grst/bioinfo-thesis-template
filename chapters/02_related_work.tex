@@ -196,16 +196,19 @@ SLAM will be outlined here.
 
 \subsection{Basic VSLAM pipeline}
 
-The following is a description of 
+The following is a description of a basic pipeline for visual SLAM.  Whilst the SLAM system that
+this work is based on is somewhat more complex, this shows how all the above algorithms may be used
+together to form a complete SLAM pipeline.  The utilised SLAM system will be discussed in section
+\ref{chapter:ScaViSLAM}
 
-The feature extraction in Visual SLAM involves using image feature detectors/descriptors as
+The feature extraction in Visual SLAM involves using image feature detectors/ descriptors as
 outlined in section \ref{subsec:features}.  These features may then be referred to as
 landmarks. For a single observation of a landmark from one frame of a single camera, one can
 determine a 3D ray from the current camera pose by making use of the camera model as outlined in
 section \ref{subsec:pinhole_cam}.  Multiple observations from multiple frames allows for multiple
 rays to intersect at this landmark, thus a 3D position of the landmark may be estimated using
-triangulation. In the case of a stereo camera, the 3D estimate more or less comes for free, as a
-landmarks may be triangulated from left and right frame.
+triangulation. In the case of a stereo camera, the 3D estimate more or less comes for free, as
+landmarks may be triangulated from left and right camera frame.
 
 The data association stage is performed by doing feature matching across different camera frames.
 Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) 

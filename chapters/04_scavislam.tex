@@ -1,33 +1,73 @@
 \chapter{SLAM Framework}
-\label{chapter:slam_framework}
+\label{chapter:ScaViSLAM}
 
-This chapter will describe the ScaViSLAM system
+This chapter will describe the underlying SLAM system used for this work, ScaViSLAM.  ScaViSLAM,
+(Scalable Visual SLAM) is a stereo visual SLAM algorithm designed to do online constant time SLAM. 
+It achieves this by using a SLAM graph, and instead of optimizaing over the whole graph,
+it optimizes using a 'double window' approach to select which parts of the graph to optimize.  It
+consists an in 'inner window', where a bundle adjustment over all poses and landmarks is performed,
+and an outer window, where an optimization over only keyframes and keyframe-keyframe edges is done.
+ The outer and inner window are dynamically calculated by the algorithm during operation.  This
+double-window approach allows for only a subsection of the graph to be optimized each step,
+thus solving in constant time, whilst still allowing for the entire graph to remain consistent.
+
+The inner workings of ScaViSLAM may be broken up into its various modules; stereo frontend, SLAM
+graph backend and place recognition module.  Each of these modules will be discussed here.  In
+addition to the modules, the operation of the SLAM graph will be expanded on, as not only is this
+the main novelty of the ScaViSLAM algorithm, but is also very important in the context of the
+contribution of this work. The main interface between the algorithm presented in this work and
+ScaViSLAM system is by adding information to the SLAM graph.
 
 \section{Frontend}
-\begin{itemize}
-\itemsep0em
- \item Visual Odometry
- \item Tracking points
- \item Creates Keyframes
-\end{itemize}
+\label{sec:scavislam_frontend}
+
+The frontend is responsible for calculating visual odometry.  It also finds landmarks and estimates
+their 3D positions using stereo information.  It is also responsible for creating new keyframes,
+containing all the logic for when to generate a new keyframe or switch to an old one. 
+
+\subsection{Visual Odometry}
+
+gpu tracking whatever
+
+\subsection{Tracking points}
+
+I donno
+
+\subsection{Creates Keyframes}
+
+I dont care
 
 \section{Backend}
-\begin{itemize}
-\itemsep0em
- \item Contains the entire graph (not in g2o format)
- \item Performs some bundle adjustment
- \item Acts as a wrapper for g2o
-\end{itemize}
+\label{sec:scavislam_backend}
+
+The backend is responsible for maintaining the entire SLAM graph, and thus holds internally its
+own representation of the whole graph.  It provides interfaces for other modules (frontend, place
+recognition) to add information to the graph. It also acts as a wrapper for the graph solving
+library, in this case g2o. As the graph is designed to run in constant time, the backend has been
+designed to run relatively quickly so that the graph may be constantly solved during operation.
+
+\subsection{Contains the entire graph (not in g2o format)}
+\subsection{Performs some bundle adjustment}
+\subsection{Acts as a wrapper for g2o}
 
 \section{Place Recognition}
-\begin{itemize}
-\itemsep0em
- \item searches through all keyframes for place matches
- \item Geometry check
- \item Adds contraints to graph
-\end{itemize}
+\label{sec:scavislam_place_recog}
+
+The place recognition module is responsible for detecting 'large loop closures' between keyframes. 
+It does this using appearance only information from each keyframe and attempts to match similar
+keyframes.  For loop closure candidates, it then does a 3D geometry check by matching feature
+points and then pose estimation using 3D-3D correspondances as calculated by stereo information. 
+If this is successful, the pose can be added to the graph as an edge.
+
+\subsection{searches through all keyframes for place matches}
+\subsection{Geometry check}
+\subsection{Adds contraints to graph}
 
 \section{Graph Optimization}
+\label{sec:scavislam_graph}
+
+In this section the ScaViSLAM graph design will be outlined in detail.  The graph solver will also
+be discussed, as well as the details behind the double window approach.
 
 \subsection{SLAM graph theory}
 \subsection{Non linear Optimization}
