@@ -134,9 +134,21 @@ rest of the graph.
 In this section the ScaViSLAM graph design will be outlined in detail.  The graph solver will also
 be discussed, as well as the details behind the double window approach.
 
-\subsection{SLAM graph theory}
-\subsection{Non linear Optimization}
 \subsection{g2o}
+
+g2o is c++ framework for solving optimization of non-linear least squares problems that can be
+described by a hyper-graph. A hyper-graph is an extension of a graph where an edge can connect two
+or more nodes together. 
+
+To express an optimization problem as a graph, one can think of vertices as being variables, or
+states, to optimize over, and edges as being constraints for 1 or more vertices.  Edges for a single
+vertex are called unary edges, for two vertices binary edges and more than 2 multi edges.  Vertex
+states may be one or more dimensions.  Having said that, vertices may also be used a parameters in
+the optimization problem.  Error functions to minimise are then defined over vertex states and edge
+constraints.
+
+An example of how a simple SLAM problem may be expressed as a hyper-graph is shown below.
+
 \subsection{Graph description}
 \begin{itemize}
 \itemsep0em
