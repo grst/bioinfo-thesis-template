@@ -133,6 +133,12 @@ and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite
 the ETH paper. 
 Mention a bunch of other descriptors, cite them as well.
 
+\subsection{Reprojection Error}
+
+Reprojection error is an important concept that will be referred to many times in this work.  It is
+a very powerful tool to more accurately model the cameras accuracy as a sensor.
+%TODO
+
 \subsection{RANSAC}
 \label{subsec:RANSAC}
 
@@ -247,6 +253,30 @@ estimation with respect to the keyframe.  The mapping thread that deals with the
 much lower framerate, and handles changing the keyframe, global optimization(?), something else. 
 The overall outcome is a system that provides an accurate pose in global coordinates with a fast
 update rate, as well as a globally consistent map.
+%TODO: read PTAM paper again.  You do not know what the hell you are on about here
+
+\subsection{Loop Closure}
+\label{subsec:loop_closure}
+
+A common problem with visual SLAM systems is that the pose estimation between frames is not
+perfectly accurate.  While locally this is not a problem, if the camera is to move a long distance
+this error will accumulate, as the current pose is a product of all the previous frame to frame
+transformations.  This effect can easily be demonstrated by performing a long trajectory and
+returning to the start point.  Whilst the camera is in its original position, the estimated pose
+will be some offset from the origin.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.8\textwidth]{chapters/images/loop-closure}
+  \caption{Loop Closure}
+\end{figure}
+
+It is possible to compensate for this visual odometry drift by performing 'large loop closures'. 
+After returning to a previous location, the current frame can be registered against an earlier
+recorded frame at this location using the standard pipeline of pose estimation based on shared
+landmark observations.  The current pose may be corrected to the correct position by adjusting all
+of the previous poses slightly.  This adjustment may be performed efficiently and optimally using
+graph optimization.
 
 \subsection{Graph SLAM}
 \label{subsec:graph_slam}

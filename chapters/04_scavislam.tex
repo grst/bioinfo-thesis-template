@@ -11,12 +11,12 @@ and an outer window, where an optimization over only keyframes and keyframe-keyf
 double-window approach allows for only a subsection of the graph to be optimized each step,
 thus solving in constant time, whilst still allowing for the entire graph to remain consistent.
 
-The inner workings of ScaViSLAM may be broken up into its various modules; stereo frontend, SLAM
-graph backend and place recognition module.  Each of these modules will be discussed here.  In
-addition to the modules, the operation of the SLAM graph will be expanded on, as not only is this
-the main novelty of the ScaViSLAM algorithm, but is also very important in the context of the
-contribution of this work. The main interface between the algorithm presented in this work and
-ScaViSLAM system is by adding information to the SLAM graph.
+The inner workings of ScaViSLAM may be broken up into three different modules, each of which runs
+in a seperate thread; the stereo frontend, SLAM graph backend and place recognition. These
+modules will be discussed here. In addition to the modules, the operation of the SLAM graph will be
+expanded on, as not only is this the main novelty of the ScaViSLAM algorithm, but is also very
+important in the context of the contribution of this work. The main interface between the algorithm
+presented in this work and ScaViSLAM system is by adding information to the SLAM graph.
 
 \section{Frontend}
 \label{sec:scavislam_frontend}
@@ -27,41 +27,106 @@ containing all the logic for when to generate a new keyframe or switch to an old
 
 \subsection{Visual Odometry}
 
-gpu tracking whatever
+%TODO: brief/fast citation
+
+To calculate an initial transformation between frames, first a disparity image is calculated using
+dense stereo matching, then dense stereo tracking is performed.  Both of these operations are done
+on the GPU.  After an initial transformation has been estimated, landmarks are matched used
+guided BRIEF (citation) at FAST (citation) corners locations.  Matching is done on multiple
+image pyramid levels to enable some degree of scale invariance. Selection of landmarks will be
+discussed in the following section.  Image patches of landmarks are warped into the current
+perspective by using the current transformation to improve matching. Having matched enough points
+against current and previous keyframes, a refined pose is calculated by minimising reprojection
+error of all point correspondences.
 
 \subsection{Tracking points}
 
-I donno
+In an outdoor setting there are often many landmarks to track and therefore it is important to
+select reliable points to track in the interest of robustness and scalability.  Therefore the
+following criteria is applied:
+\begin{itemize}
+ \setlength{\itemsep}{0cm}%
+ \setlength{\parskip}{0cm}%
+ \item Visible from either current keyframe or adjacent keyframe
+ \item Reprojection error is within a threshold
+ \item Not too far
+ \item Not too close
+ \item Change in viewing angle between frames not too large
+\end{itemize}
 
 \subsection{Creates Keyframes}
 
-I dont care
+New keyframes are added either when the number of shared observations drops below a certain
+threshold, or a certain metric distance from the last keyframe has been passed.  This ensures good
+interconnectivity between all keyframes.  As new keyframes, landmarks and landmark observations are
+created, these are passed to the backend to be integrated into the graph.
 
 \section{Backend}
 \label{sec:scavislam_backend}
 
 The backend is responsible for maintaining the entire SLAM graph, and thus holds internally its
-own representation of the whole graph.  It provides interfaces for other modules (frontend, place
-recognition) to add information to the graph. It also acts as a wrapper for the graph solving
-library, in this case g2o. As the graph is designed to run in constant time, the backend has been
-designed to run relatively quickly so that the graph may be constantly solved during operation.
+own representation of the whole graph.  It provides interfaces for other modules to add information
+to the graph. It also acts as a wrapper for the graph solving library, in this case g2o. As the
+graph is designed to run in constant time, the backend has been designed to execute at a relatively
+fast rate (insert number here) so that the graph may be constantly solved during operation.
+%TODO: determine backend speed
 
-\subsection{Contains the entire graph (not in g2o format)}
-\subsection{Performs some bundle adjustment}
-\subsection{Acts as a wrapper for g2o}
+%\subsection{Contains the entire graph (not in g2o format)}
+%\subsection{Performs some bundle adjustment}
+%\subsection{Acts as a wrapper for g2o}
+
+The backend also serves as a wrapper for the graph optimizer.  It contains data structures to
+represent all keyframes, keyframe edges, landmarks and landmark observations.  For each
+optimization, only the necessary keyframes and edges are copied into the optimizer.  After
+optimization has been performed, the optimized vertices are copied back to ScaViSLAM representation
+of the graph, and the optimizer object is discarded.
 
 \section{Place Recognition}
 \label{sec:scavislam_place_recog}
 
-The place recognition module is responsible for detecting 'large loop closures' between keyframes. 
-It does this using appearance only information from each keyframe and attempts to match similar
-keyframes.  For loop closure candidates, it then does a 3D geometry check by matching feature
-points and then pose estimation using 3D-3D correspondances as calculated by stereo information. 
-If this is successful, the pose can be added to the graph as an edge.
+The place recognition module is responsible for detecting 'large loop closures' between keyframes.
+(see section \ref{subsec:loop_closure}).
 
-\subsection{searches through all keyframes for place matches}
+\subsection{Bag of words}
+
+One solution to finding large loop closures between keyframes would be to compare every keyframe
+with every other keyframe generated.  However this would result in a time complexity of $O(n^2)$ for
+n frames.  This does clearly not scale to large maps.
+
+A better solution is to use a place recognition algorithm, which given a collection of images of
+various locations, attempts to match a query frame to an existing location, or say if the frame is
+a completely new location without searching through the entire image space.  There has been
+considerable research in place recognition in recent times (cite a bunch of papers).  In ScaViSLAM
+the bag of words approach was employed.
+
+%TODO: read about bag of words and summarize
+
+The current implementation of bag of words returns a score for every frame (check this).  If the
+score is above a certain threshold, this frame pair will be identified as a potential loop closure
+and then tested with a geometry check.
+
 \subsection{Geometry check}
-\subsection{Adds contraints to graph}
+
+The geometry check serves two purposes; one is to filter out false positives as generated by the
+place recognition module.  The bag of words implementation in ScaViSLAM is rather simplistic and as
+a result outputs many false positives.  The second purpose is to generate an estimation of the
+pose between keyframes so it may be integrated into the SLAM graph.  
+
+To do this check, features are extracted from both frames and projected to 3D points using stereo
+information.  3D-3D correspondences are obtained from feature matching between frames and RANSAC is
+used to find an optimal transformation.  If enough inliers are returned then the edge may be added
+to the graph.  The number of inliers may be used to weight the strength of this pose-pose graph
+constraint.
+
+\subsection{Readjustment of double window}
+%TODO: move this section to double window
+Due to the double window approach, simply adding the pose constraint will not close the loop, as
+pose edges are not considered in the inner window.  Instead, the current keyframe is initialized to
+its new position based on the loop closure edge, and then shared observations between current and
+old keyframes are searched for.  If successful, The landmarks are merged and the old keyframes are
+added to the inner window.  Optimization is then executed with the new double window.  The inner
+window pulls old and new keyframes together, while the outer window propagates error throughout the
+rest of the graph.
 
 \section{Graph Optimization}
 \label{sec:scavislam_graph}
