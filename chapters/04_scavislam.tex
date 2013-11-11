@@ -142,12 +142,12 @@ Where $c_k = \bv e_k^T \bv \Omega_k \bv e_k$, $\bv b_k = \bv e_k^T \bv \Omega_k 
 $\bv H$ is a very large sparse square matrix.  It is mostly zeros; it only contains non zero values where there is a constraint connecting blocks.  This matrix can be efficiently solved by taking advantage of the fact that is is sparse, for instance, by Cholesky factorization.
 
 \subsubsection{Error functions}
-%TODO: error fn fill in or remove
-This would talk about how to design the error function.  Talk about for instance how to turn an SE(3) into a 6D vector.  Lie algebra could be mentioned. Leave as place holder for now
+%TODO: error fn fill in 
+This would talk about how to design the error function.  Talk about for instance how to turn an SE(3) into a 6D vector.  Lie algebra will be mentioned for SE(3) edge case. 
 
 \subsubsection{Operator to apply increments in Optimization}
-%TODO: oplus fill in or remove
-Non Euclidean nature of parameters.  For instance rotations are not Euclidean.  Define a $\boxplus$ operator to add an increment to the vertex states.  For instance take vector part of Quaternion or use some Lie algebra whatever.  Place holder
+%TODO: oplus fill in 
+Non Euclidean nature of parameters.  For instance rotations are not Euclidean.  Define a $\boxplus$ operator to add an increment to the vertex states.  For instance take vector part of Quaternion or use some Lie algebra whatever. explain SE(3) example 
 
 \subsubsection{Robust least squares}
 %TODO huber fill in or remove
@@ -155,20 +155,64 @@ Use huber instead of squares to make robust against outliers.  Mention that g2o 
 
 \subsection{Graph description}
 
-Having discussed the graph solver used by this package, the specific SLAM graph implementation will be covered here.
-\begin{itemize}
-\itemsep0em
- \item SE(3) keyframes
- \item SE(3) keyframe-keyframe edge
- \item 3D Vector Landmark
- \item 3D Vector UVU reprojection keyframe-landmark edge
-\end{itemize}
+Having discussed the graph solver used by this package, the specific SLAM graph implementation will be covered here.  The graph may be split up into two parts, an inner and an outer window.  These will be described first separately, and following how they work together.
 
-\subsection{Double Window Graph Optimization}
-\begin{itemize}
-\itemsep0em
- \item B.A. inner window
- \item Pose-Pose outer window
- \item metrics to define windows
- \item ensures constant graph optimize time (novel from this approach)
-\end{itemize}
+\subsubsection{Inner Window}
+
+The inner window is a bundle adjustment over poses of the camera, as well as landmark positions, using edges of landmark observations.  See fig \ref{fig:inner_window}.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{chapters/images/inner_window}
+  \caption{Inner window}
+  \label{fig:inner_window}
+\end{figure}
+
+$\bv P_i$ represent 3D camera poses of keyframes and are therefore 6 dimensional (3 dimensions for translation, 3 for rotation).  $\bv L_i$ is a landmark position and is represented as a 3D vector in the frame of the keyframe where it was first recorded.  This will be referred to as the anchor keyframe.  It it important to note that the landmark is not represented in world coordinates, and therefore its position is also dependent on the anchor keyframe vertex state.
+
+The edges which represent observations of landmarks are multi edges between the landmark, the anchor keyframe and the pose where it is observed from.  This also means the first observation of a landmark will contain two connections to the anchor keyframe.  The multi edge constraint is represented as a 3D vector - denoted as $\bv UVU$.  The first 2 values are the x and y pixel coordinates of the landmark as seen from the left frame of the stereo camera.  The third value is the x pixel coordinate in the right camera.  The reprojection error is calculated between the vertex states and multi edge as follows:
+
+%TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
+\begin{align}
+ \bv e = \bv{UVU} - map( ^{kf}\bv T_w \ ^w \bv T_{anchor} \ \bv L_{anchor}, \bv K )
+\end{align}
+
+$\bv L_{anchor}$ is the landmark in the anchor frame (landmark vertex).  $^w \bv T_{anchor}$ is the transform from the anchor keyframe to world frame (anchor keyframe vertex), and $^{kf}\bv T_w$ is the transformation from the world frame to the keyframe where this particular edge was recorded (observation keyframe).  The map function takes intrinsic camera calibration parameters and projects a 3D point into the pixel coordinates.
+
+\subsection{Outer Window}
+
+Unlike the bundle adjustment of the inner window, the outer window is a simple pose graph optimization.  It contains keyframe poses as in the inner window, and keyframe edges, which describe a transformation from one keyframe to another.  They are binary edges, only relating two poses at most.  The error function is then defined as follows:
+
+%TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
+\begin{align}
+ \bv e =  someLieGroupLogThing(^{w}\bv T_{kf_a} \ ^{kf_a} \bv T_{kf_b} \ ^{kf_b} \bv T_{w})
+\end{align}
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{chapters/images/outer_window}
+  \caption{Outer window}
+  \label{fig:outer_window}
+\end{figure}
+
+$^{w}\bv T_{kf_a}$ and $^{kf_b} \bv T_{w}$ are obtained from the vertex states, while $^{kf_a} \bv T_{kf_b}$ is the edge measurement.
+
+\subsection{Window selection}
+
+
+%\begin{itemize}
+%\itemsep0em
+ %\item SE(3) keyframes
+ %\item SE(3) keyframe-keyframe edge
+ %\item 3D Vector Landmark
+ %\item 3D Vector UVU reprojection keyframe-landmark edge
+%\end{itemize}
+%
+%\subsection{Double Window Graph Optimization}
+%\begin{itemize}
+%\itemsep0em
+ %\item B.A. inner window
+ %\item Pose-Pose outer window
+ %\item metrics to define windows
+ %\item ensures constant graph optimize time (novel from this approach)
+%\end{itemize}
