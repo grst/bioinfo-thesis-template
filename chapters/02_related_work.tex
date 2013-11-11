@@ -14,43 +14,18 @@ Brief description of SE(3) and SO(3)
 
 \section{Camera Models}
 
-In order to utilise a camera as a sensor, a mapping between image coordinates and world
-coordinates needs to be derived.  This allows observations of the camera to be transformed into
-meaningful measurements.  To achieve this mapping a sensor model of the camera is required. This
-section will cover all the different types of cameras used in this work and corresponding camera
-models for each. 
+In order to utilise a camera as a sensor, a mapping between image coordinates and world coordinates needs to be derived.  This allows observations of the camera to be transformed into meaningful measurements.  To achieve this mapping a sensor model of the camera is required. This section will cover all the different types of cameras used in this work and corresponding camera models for each. 
 
 \subsection{Pinhole Camera Model}
 \label{subsec:pinhole_cam}
 
 %TODO: references
 
-The pinhole camera model is the most basic and common of camera models used in computer vision.  It
-describes the mathematical relationship between the coordinates of a 3D point in the world and its
-projection onto an image plane.  This model assumes the aperture of the camera to be an ideal
-pinhole. It does not consider lenses used to focus light which in reality result in lense
-distortion.  It does also not take into account sensor quantization apparent in using a modern
-digital CCD sensor. Nevertheless it still provides a sufficient model of camera projection for this
-work, and practical considerations such as image size, resolution and lense distortion can be
-compensated for.
+The pinhole camera model is the most basic and common of camera models used in computer vision.  It describes the mathematical relationship between the coordinates of a 3D point in the world and its projection onto an image plane.  This model assumes the aperture of the camera to be an ideal pinhole. It does not consider lenses used to focus light which in reality result in lense distortion.  It does also not take into account sensor quantization apparent in using a modern digital CCD sensor. Nevertheless it still provides a sufficient model of camera projection for this work, and practical considerations such as image size, resolution and lense distortion can be compensated for.
 
-When using the pinhole camera model, the camera is assumed to be a sealed box with a pinhole
-aperture on one side, and the image plane, or image sensor on the other side.  Having a small
-aperture blocks most of the light rays from objects in the world and allows a focused and inverted
-image of the world to be recorded. In this case the focal point is the aperture and the focal length
-is the distance from the aperture to the sensor. fig. whatever. For all intensive purposes,
-this model can be redrawn as in fig. whatever whatever. The image plane is inverted and shown
-reflected in front the of the camera.  As long as the focal length can be determined, it is then
-trivial to calculate coordinates on the sensor for a given ray or world coordinate using simple
-geometry. Sensor coordinates can then be converted to image coordinates given the physical size
-of the CCD and its resolution.  
+When using the pinhole camera model, the camera is assumed to be a sealed box with a pinhole aperture on one side, and the image plane, or image sensor on the other side.  Having a small aperture blocks most of the light rays from objects in the world and allows a focused and inverted image of the world to be recorded. In this case the focal point is the aperture and the focal length is the distance from the aperture to the sensor. fig. whatever. For all intensive purposes, this model can be redrawn as in fig. whatever whatever. The image plane is inverted and shown reflected in front the of the camera.  As long as the focal length can be determined, it is then trivial to calculate coordinates on the sensor for a given ray or world coordinate using simple geometry. Sensor coordinates can then be converted to image coordinates given the physical size of the CCD and its resolution.  
 
-Take note the principle point is often not in the sensor of the image, and therefore the
-coordinates of this point on the sensor needs to be determined.  In addition the focal length
-varies from camera to camera and therefore both of these values need to be determined by performing
-an intrinsic calibration. For the calibration, the focal length may be expressed in pixel units,
-which means the conversion from metric sensor coordinates ( m) to pixel coordinates (u,v) is
-also performed in one step.
+Take note the principle point is often not in the sensor of the image, and therefore the coordinates of this point on the sensor needs to be determined.  In addition the focal length varies from camera to camera and therefore both of these values need to be determined by performing an intrinsic calibration. For the calibration, the focal length may be expressed in pixel units, which means the conversion from metric sensor coordinates ( m) to pixel coordinates (u,v) is also performed in one step.
 
 %http://www.jordicenzano.name/projects/2D-to-3D-Paradigm-overview/camera-model
 %use this for picture motivation
@@ -75,14 +50,7 @@ also performed in one step.
 
 %TODO: references
 
-The problem with using a pinhole camera in practice is that it does not allow enough light to into
-the camera, requiring longer exposure time and therefore blurring in the presence of movement. 
-Therefore a double convex lense is used to focus more light rays onto the sensor and allowing a
-sharper image.  Such as setup can be seen in fig. xyz.  The pinhole camera model may still be used,
-however now lense distortion needs to be accounted for.  Lense distortion causes lines to be
-curved, as in fig x.  It is also possible during the intrinsic calibration to simultaneously
-determine distortion coefficients which allow the image to be reshaped such that all straight lines
-appear straight.
+The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is used to focus more light rays onto the sensor and allowing a sharper image.  Such as setup can be seen in fig. xyz.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  Lense distortion causes lines to be curved, as in fig x.  It is also possible during the intrinsic calibration to simultaneously determine distortion coefficients which allow the image to be reshaped such that all straight lines appear straight.
 
 \begin{figure}[h!]
   \centering
@@ -127,16 +95,11 @@ Leave this to last.  Flir may (probably) get left out
 \subsection{Feature point detection and extraction}
 \label{subsec:features}
 
-Outline what is feature point detection, description and matching, why we need
-it.  Mention SIFT
-and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite
-the ETH paper. 
-Mention a bunch of other descriptors, cite them as well.
+Outline what is feature point detection, description and matching, why we need it.  Mention SIFT and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite the ETH paper. Mention a bunch of other descriptors, cite them as well.
 
 \subsection{Reprojection Error}
 
-Reprojection error is an important concept that will be referred to many times in this work.  It is
-a very powerful tool to more accurately model the cameras accuracy as a sensor.
+Reprojection error is an important concept that will be referred to many times in this work.  It is a very powerful tool to more accurately model the cameras accuracy as a sensor.
 %TODO
 
 \subsection{RANSAC}
@@ -182,48 +145,17 @@ traditional approach for SLAM can be split into 4 steps.
 \end{enumerate}
 
 %TODO: cite kalman filter
-Feature extraction involves finding unique features within the sensor data, also known as
-landmarks, which can be later in future sensor measurements.  Data association is the process of
-matching these landmarks over multiple sensor readings, in essence tracking them.  Pose estimation
-involves using the information of how multiple landmarks moved over time with respect to the
-robot/sensor in order to determine how the robot moved with respect to those landmarks.  Finally,
-having determined a map of landmarks, and a pose with respect to those landmarks, a global
-optimization, or bundle adjustment, over all landmarks and robot poses may be performed in order to
-produce a globally consistent map and trajectory.  In the past this has commonly been done by using
-a kalman filter (cite) and by adding all landmarks to the system state.  In more recent times graph
-optimization approaches have become popular as they scale much better to larger maps.
+Feature extraction involves finding unique features within the sensor data, also known as landmarks, which can be later in future sensor measurements.  Data association is the process of matching these landmarks over multiple sensor readings, in essence tracking them.  Pose estimation involves using the information of how multiple landmarks moved over time with respect to the robot/sensor in order to determine how the robot moved with respect to those landmarks.  Finally, having determined a map of landmarks, and a pose with respect to those landmarks, a global optimization, or bundle adjustment, over all landmarks and robot poses may be performed in order to produce a globally consistent map and trajectory.  In the past this has commonly been done by using a kalman filter (cite) and by adding all landmarks to the system state. In more recent times graph optimization approaches have become popular as they scale much better to larger maps.
 
-SLAM has taken many forms depending on sensors available. Visual SLAM denotes performing SLAM using
-some kind of camera.  In recent times, a plethora of visual SLAM algorithms for monocular cameras
-(cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras
-(rgbdslam, kinfu, kintinuous) have been developed.  A keyframe SLAM system similar in concept to the
-PTAM approach has been utilised as the basis for this work.  The basic operation for this style of
-SLAM will be outlined here.
+SLAM has taken many forms depending on sensors available. Visual SLAM denotes performing SLAM using some kind of camera.  In recent times, a plethora of visual SLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.  A keyframe SLAM system similar in concept to the PTAM approach has been utilised as the basis for this work.  The basic operation for this style of SLAM will be outlined here.
 
 \subsection{Basic VSLAM pipeline}
 
-The following is a description of a basic pipeline for visual SLAM.  Whilst the SLAM system that
-this work is based on is somewhat more complex, this shows how all the above algorithms may be used
-together to form a complete SLAM pipeline.  The utilised SLAM system will be discussed in section
-\ref{chapter:ScaViSLAM}
+The following is a description of a basic pipeline for visual SLAM.  Whilst the SLAM system that this work is based on is somewhat more complex, this shows how all the above algorithms may be used together to form a complete SLAM pipeline.  The utilised SLAM system will be discussed in section \ref{chapter:ScaViSLAM}
 
-The feature extraction in Visual SLAM involves using image feature detectors/ descriptors as
-outlined in section \ref{subsec:features}.  These features may then be referred to as
-landmarks. For a single observation of a landmark from one frame of a single camera, one can
-determine a 3D ray from the current camera pose by making use of the camera model as outlined in
-section \ref{subsec:pinhole_cam}.  Multiple observations from multiple frames allows for multiple
-rays to intersect at this landmark, thus a 3D position of the landmark may be estimated using
-triangulation. In the case of a stereo camera, the 3D estimate more or less comes for free, as
-landmarks may be triangulated from left and right camera frame.
+The feature extraction in Visual SLAM involves using image feature detectors/ descriptors as outlined in section \ref{subsec:features}.  These features may then be referred to as landmarks. For a single observation of a landmark from one frame of a single camera, one can determine a 3D ray from the current camera pose by making use of the camera model as outlined in section \ref{subsec:pinhole_cam}.  Multiple observations from multiple frames allows for multiple rays to intersect at this landmark, thus a 3D position of the landmark may be estimated using triangulation. In the case of a stereo camera, the 3D estimate more or less comes for free, as landmarks may be triangulated from left and right camera frame.
 
-The data association stage is performed by doing feature matching across different camera frames.
-Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) 
-This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of monocular SLAM
-(2D-2D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D
-correspondances). The model in this case is the 6 DoF transform between frames. The error is
-calculated by projecting landmarks from one frame to the next by applying the transformation to each
-of them. The error is then the sum of the distances between points of one frame, and the
-corresponding points transformed to that same frame. \ref{eq:ransac_error}
+The data association stage is performed by doing feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of monocular SLAM (2D-2D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transform between frames. The error is calculated by projecting landmarks from one frame to the next by applying the transformation to each of them. The error is then the sum of the distances between points of one frame, and the corresponding points transformed to that same frame. \ref{eq:ransac_error}
 
 \begin{figure}
  \centering
@@ -233,37 +165,21 @@ corresponding points transformed to that same frame. \ref{eq:ransac_error}
  \caption{RANSAC error function.  this formula sucks needs formatting}
  \label{eq:ransac_error}
 \end{figure}
+%TODO: fix formula
 
-
-Bundle adjustment over all landmarks and camera poses is commonly achieved with a graph
-optimization. This will be expanded on in sec \ref{subsec:graph_slam}
+Bundle adjustment over all landmarks and camera poses is commonly achieved with a graph optimization. This will be expanded on in sec \ref{subsec:graph_slam}
 
 \subsection{Keyframe SLAM}
 
-The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have
-them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. 
-This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that
-keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera
-with respect to that keyframe.  If the camera moves or rotates a significant distance away from
-the active keyframe, a new keyframe will be created with a known transformation to the previous
-keyframe.
+The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera with respect to that keyframe.  If the camera moves or rotates a significant distance away from the active keyframe, a new keyframe will be created with a known transformation to the previous keyframe.
 
-The intent is to have a fast localization thread that runs in realtime providing an accurate pose
-estimation with respect to the keyframe.  The mapping thread that deals with the keyframe runs at a
-much lower framerate, and handles changing the keyframe, global optimization(?), something else. 
-The overall outcome is a system that provides an accurate pose in global coordinates with a fast
-update rate, as well as a globally consistent map.
+The intent is to have a fast localization thread that runs in realtime providing an accurate pose estimation with respect to the keyframe.  The mapping thread that deals with the keyframe runs at a much lower framerate, and handles changing the keyframe, global optimization(?), something else. The overall outcome is a system that provides an accurate pose in global coordinates with a fast update rate, as well as a globally consistent map.
 %TODO: read PTAM paper again.  You do not know what the hell you are on about here
 
 \subsection{Loop Closure}
 \label{subsec:loop_closure}
 
-A common problem with visual SLAM systems is that the pose estimation between frames is not
-perfectly accurate.  While locally this is not a problem, if the camera is to move a long distance
-this error will accumulate, as the current pose is a product of all the previous frame to frame
-transformations.  This effect can easily be demonstrated by performing a long trajectory and
-returning to the start point.  Whilst the camera is in its original position, the estimated pose
-will be some offset from the origin.
+A common problem with visual SLAM systems is that the pose estimation between frames is not perfectly accurate.  While locally this is not a problem, if the camera is to move a long distance this error will accumulate, as the current pose is a product of all the previous frame to frame transformations.  This effect can easily be demonstrated by performing a long trajectory and returning to the start point.  Whilst the camera is in its original position, the estimated pose will be some offset from the origin.
 
 \begin{figure}[h!]
   \centering
@@ -271,12 +187,7 @@ will be some offset from the origin.
   \caption{Loop Closure}
 \end{figure}
 
-It is possible to compensate for this visual odometry drift by performing 'large loop closures'. 
-After returning to a previous location, the current frame can be registered against an earlier
-recorded frame at this location using the standard pipeline of pose estimation based on shared
-landmark observations.  The current pose may be corrected to the correct position by adjusting all
-of the previous poses slightly.  This adjustment may be performed efficiently and optimally using
-graph optimization.
+It is possible to compensate for this visual odometry drift by performing 'large loop closures'. After returning to a previous location, the current frame can be registered against an earlier recorded frame at this location using the standard pipeline of pose estimation based on shared landmark observations.  The current pose may be corrected to the correct position by adjusting all of the previous poses slightly.  This adjustment may be performed efficiently and optimally using graph optimization.
 
 \subsection{Graph SLAM}
 \label{subsec:graph_slam}
