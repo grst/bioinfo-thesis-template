@@ -69,34 +69,12 @@ To do this check, features are extracted from both frames and projected to 3D po
 
 \section{ScaViSLAM Graph}
 \label{sec:scavislam_graph}
-\subsection{g2o}
-
-g2o is c++ framework for solving optimization of non-linear least squares problems that can be described by a hyper-graph, and is used by ScaViSLAM to do the graph optimization.  Before the graph structure will be discussed, there are a few practical considerations to take into account; how to design vertex states and edge error functions.
-
-\subsubsection{Operator to apply increments in optimization}
-%TODO: oplus fill in 
-As part of the SLAM problem, it is common to have parameterization in non Euclidean space.  For instance, a 3 dimensional pose $SE(3)$ is described by a translational part $\mathbb{R}^3$, which is clearly Euclidean, and a rotational component $SO(3)$ which is not euclidean.  The rotation part is often described in some over parameterized way, for instance quaternions or rotational matrices.  
-
-g2o is agnostic about the exact representation of the vertex state, it is only provided with the degrees of freedom of a vertex.  This means during optimization the optimizer will provide increments to the vertex in the form of a vector with as many values as degrees of freedom.  If the rotational part was expressed as a rotation matrix, then somehow this 3D vector needs to be applied to the matrix in a sensible way.  The vector may not be simply added or multiplied to the matrix due to the non euclidean nature of this representation.
-
-One way to deal with this is to optimize over all degrees of freedom of the over parameterized representation, in this case 9 degrees for an $SO(3)$ + 3 for the translation part, therefore 12 degrees per vertex, however this makes the problem more complex and can introduce error.  Another way is to use the 3D increment vector as Euler angles, however singularities could occur due to Gimbal lock.
-
-A better idea is to consider the problem space as a manifold.  A manifold is a space that globally may not be euclidean, although locally can be considered euclidean.  Then one needs to define an operator, denoted $\boxplus$, which maps a local variation $\Delta\bv x$ in Euclidean space on to the Manifold. $\bv e_k(\bv x_k \boxplus \Delta\bv x$)
-
-The Lie algebra provides a compact representation of the element, and therefore we can use the exponential map $\exp\colon \mathfrak g \to G$ for the $\boxplus$ operator.  For a further explanation of Lie groups and the logarithmic map, please see \ref{sec:lie_group}
-
-\subsubsection{Error functions}
-
-The error function $\bv e_k(\bv x_k, \bv z_k)$ measures how well the vertices fit the the edge that they are connected to.  The error functions used by ScaViSLAM will be presented in following sections. A similar problem is encountered as for vertex increments when calculating error for the case of non euclidean parameterization.  Again for the example of the $SE(3)$ pose, in this case the error, which could be described as an $SE(3)$ pose, needs to be converted to some minimal vector form for the optimizer.  In this case the  logarithmic mapping $\log\colon G \to \mathfrak g$ can be used to achieve this conversion. More details see \ref{sec:lie_group}
-
-%\subsubsection{Robust least squares}
-%TODO huber fill in
-%Use huber instead of squares to make robust against outliers.  Mention that g2o can define this per edge.  Do a figure of the function!
-%CBF
 
 \subsection{Graph description}
 
-Having discussed the graph solver used by this package, the specific SLAM graph implementation will be covered here.  The graph may be split up into two parts, an inner and an outer window.  These will be described first separately, and following how they work together.
+The specific SLAM graph implementation will be covered here.  The graph may be split up into two parts, an inner and an outer window.  These will be described first separately, and following how they work together.
+
+The slam solver used by ScaViSLAM is g2o.  g2o is c++ framework for solving optimization of non-linear least squares problems that can be described by a hyper-graph.
 
 \subsubsection{Inner Window}
 
