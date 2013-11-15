@@ -12,6 +12,17 @@
 Yes  - do coordinate systems, transformations, notation
 Brief description of SE(3) and SO(3)
 
+\section{Lie Groups}
+\label{sec:lie_group}
+
+A Lie group $G$ is a set of elements that must satisfy a number of axioms, mainly; the group must be closed under its binary operation, it must be associative, it must have a unique identity element and each element must have a unique inverse.  A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.
+
+$SO(3)$
+
+$SE(3)$
+
+provide explanation, mappings
+
 \section{Camera Models}
 
 In order to utilise a camera as a sensor, a mapping between image coordinates and world coordinates needs to be derived.  This allows observations of the camera to be transformed into meaningful measurements.  To achieve this mapping a sensor model of the camera is required. This section will cover all the different types of cameras used in this work and corresponding camera models for each. 
@@ -160,7 +171,7 @@ The data association stage is performed by doing feature matching across differe
 \begin{figure}
  \centering
  \begin{math}
-  e = \sum\limits_{p_i} p^a_i - _aT^b \cdot p^b_i
+  e = \sum\limits_{\bv p_i} \bv p^a_i - ^a\bv T_b \cdot \bv p^b_i
  \end{math}
  \caption{RANSAC error function.  this formula sucks needs formatting}
  \label{eq:ransac_error}
@@ -183,7 +194,7 @@ A common problem with visual SLAM systems is that the pose estimation between fr
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.8\textwidth]{chapters/images/loop-closure}
+    \includegraphics[width=0.5\textwidth]{chapters/images/loop-closure}
   \caption{Loop Closure}
 \end{figure}
 
@@ -191,3 +202,66 @@ It is possible to compensate for this visual odometry drift by performing 'large
 
 \subsection{Graph SLAM}
 \label{subsec:graph_slam}
+
+To express an optimization problem as a graph, one can think of vertices as being variables, or states, to optimize over, and edges as being constraints for 1 or more vertices.  Edges for a single vertex are called unary edges, for two vertices binary edges and more than 2 multi edges.  Vertex states may be one or more dimensions.  Having said that, vertices may also be used as parameters in the optimization problem.  Error functions to minimise are then defined as how well vertex states fit their edge constraints.  Due to the fact an edge may connect more than two vertices, this type of graph is referred to as a hyper-graph.
+
+An example of how a simple SLAM problem may be expressed as a hyper-graph is shown below.
+\begin{figure}[h]
+  \centering
+      \includegraphics[width=1.0\textwidth]{chapters/images/simple_slam}
+  \caption{A simple SLAM graph for a generic robot.  Circles are vertices to optimize over, and
+squares are edges, which in this case are measurements}
+\end{figure}
+
+The diagram shows robot poses as $\bv P_i$.  These poses could be represented by any number of dimensions. In the case of an exploratory robot, this is likely to be 3 dimensional (x, y, and yaw for movement on a fixed plane), or 6 dimensional (x, y, z, rotation about x, rotation about y, rotation about z).  $\bv U_i$ are binary edges, representing odometry measurements between robot poses. These are measurements or constraints and will remain unchanged during optimization.  $\bv L_i$ represents unique landmarks that the robot can sense and make some form of measurement relative to its own position, as well as re-identify in different robot poses.  A landmark could be a corner from a laser scan or a feature point in a camera image.  K represents calibration parameters of the sensor.  This could be something like an offset, camera intrinsic parameters, or an extrinsic parameter to transform the sensor readings from the sensor frame to the robot frame.  $\bv {ob}_i$ are observation multi-edges, between a robot pose, a landmark, and the calibration parameter.
+
+Such an example of graph optimization would allow an optimization of the poses of the robot, positions of the landmarks, and the sensor calibration, based on all odometry and observation measurements.
+
+In order to compute this optimization, the generic graph problem may be represented mathematically as follows:
+
+ \begin{align}
+   \bv{F}(\bv x) &= \sum\limits_{K \in C}^{} 
+                 \bv e_k(\bv x_k, \bv z_k)^T 
+                 \bv \Omega_k
+                 \bv e_k(\bv x_k, \bv z_k)  \\ 
+   \bv x^* &= \operatornamewithlimits{argmin}\limits_{\bv x}\bv{F}(\bv x)
+ \end{align}
+
+\begin{itemize}
+ \item $\bv x$ is a vector of parameter sets, whereby each $\bv x_i$ is a parameter block
+ \item $\bv x_k$ is a set of parameters involved in the $k$th constraint
+ \item $\bv z_k$ is a constraint or measurement relating to parameter $\bv x_k$
+ \item $\bv \Omega_k$ is the information matrix for $\bv z_k$.  This can be used to weight this constraint
+ \item $\bv e_k(\bv x_k, \bv z_k)$ is the error function that measures how well parameter block $\bv x_k$ satisfies $\bv z_k$.  If for instance $\bv z_k$ directly measured $\bv x_k$, then a straightforward error function would be $\bv e_k(\bv x_k, \bv z_k) = \bv x_k - \bv z_k $
+\end{itemize}
+
+\subsubsection{Solving the least squares problem}
+
+%TODO: citations
+A numerical solution to eq. 4.2 can be performed using a non linear solver such as Gauss-Newton or Levenberg-Marquardt (cite, cite).  The error function can be approximated by its first order Taylor expansion around the current initial guess $\breve{\bv x}$
+
+\begin{align}
+  \bv e_k(\breve{\bv x}_k + \Delta \bv x_k) &= \bv e_k(\breve{\bv x} + \Delta \bv x) \\
+      & \simeq \bv e_k + \bv J_k \Delta \bv x
+\end{align}
+
+$\bv J_k$ is the Jacobian of $\bv e_k(\bv x)$ computed in $\breve{\bv x}$.  Substituting eq(4.4) as the error function in eq(4.1), one obtains:
+
+\begin{align}
+  \bv F(\breve{\bv x} + \Delta \bv x) &= \bv e_k(\breve{\bv x} + \Delta \bv x)^T \bv \Omega_k \bv e_k(\breve{\bv x} + \Delta \bv x) \\
+  & \simeq (\bv e_k + \bv J_k \Delta \bv x)^T 
+    \bv \Omega_k 
+    (\bv e_k + \bv J_k \Delta \bv x) \\
+  &= \bv e_k^T \bv \Omega_k \bv e_k 
+    + 2 \bv e_k^T \bv \Omega_k \bv J_k \Delta \bv x 
+    + \Delta \bv x^T \bv J_k^T \bv \Omega_k \bv J_k \Delta \bv x \\
+  &= c_k + 2\bv b_k \Delta \bv x + \Delta \bv x \bv H_k \Delta \bv x
+\end{align}
+
+Where $c_k = \bv e_k^T \bv \Omega_k \bv e_k$, $\bv b_k = \bv e_k^T \bv \Omega_k \bv J_k$ and $\bv H_k = \bv J_k^T \bv \Omega_k \bv J_k$. This quadratic form can then be minimized in $\Delta \bv x$ by solving the linear system
+
+\begin{align}
+   \bv H \Delta \bv x^* = -\bv b
+\end{align}
+
+$\bv H$ is a very large sparse square matrix.  It is mostly zeros; it only contains non zero values where there is a constraint connecting blocks.  This matrix can be efficiently solved by taking advantage of the fact that is is sparse, for instance, by Cholesky factorization.
