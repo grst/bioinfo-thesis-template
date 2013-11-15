@@ -237,7 +237,7 @@ In order to compute this optimization, the generic graph problem may be represen
  \item $\bv e_k(\bv x_k, \bv z_k)$ is the error function that measures how well parameter block $\bv x_k$ satisfies $\bv z_k$.  If for instance $\bv z_k$ directly measured $\bv x_k$, then a straightforward error function would be $\bv e_k(\bv x_k, \bv z_k) = \bv x_k - \bv z_k $
 \end{itemize}
 
-\subsubsection{Solving the least squares problem}
+\subsection{Solving the least squares problem}
 
 %TODO: citations
 A numerical solution to eq. 4.2 can be performed using a non linear solver such as Gauss-Newton or Levenberg-Marquardt (cite, cite).  The error function can be approximated by its first order Taylor expansion around the current initial guess $\breve{\bv x}$
