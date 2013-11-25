@@ -1,7 +1,8 @@
 /main.pdf
 /auto/
 
-*.pdf
+main.pdf
+cover.pdf
 *.glo
 *.aux
 *.toc
