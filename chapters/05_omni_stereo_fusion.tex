@@ -3,17 +3,45 @@
 
 \section{Extrinsics for multiple camera systems}
 
-In order to combine cameras together in one framework, extrinsic calibration between cameras needs
-to be done.  This section will cover that extrinsic calibration.
+In order to combine cameras together in one framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate, as even a very small rotational offset will result in a significant reprojection error when reprojecting points from one camera to another.
 
 \subsection{Extrinsic Calibration}
 
-Explain the algorithm we used from ROS
+%TODO: understand this better
+
+An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from both cameras, a non linear optimization to determine the 6D transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package. \footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}.  This package was utilized in order to obtain a initial estimate of the transformation from stereo to omni camera.
+
+%TODO pic of pose calibration
 
 \subsection{Undistorted Perspective Image from Omni-Camera}
 
-Alex's work.
-Theory to get a rectified perspective image from donut image for calibration
+The package as described above for the extrinsic calibration works only for perspective cameras. This means cameras for which the intrinsic parameters are known and images are rectified such that all straight lines appear straight, and each pixel can be mapped to a 3D ray.  However this is not the case for the omni camera.  Both the original donut image and unwrapped circular image are distorted and can not be used by the camera pose calibration package.  Therefore a new camera projection for the omni cam was needed, to represent part of the image as a perspective type projection.
+
+%TODO: explain alex's work
+
+%KTODO: pic or perspective image
+
+\subsection{Online validation of extrinsic calibration}
+
+Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilized.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then by reprojected into the omni camera image using the extrinsic calibration.
+
+A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  These points are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a framerate of about 1-2Hz (low framerate due to feature extraction and circular matching).  Nevertheless it is useful in verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
+
+pic: circular mathcing
+
+This tool also serves a second purpose; mainly to log all of 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.
+
+\subsection{g2o non linear extrinsic refinement}
+
+A simple g2o graph was implemented to perform the extrinsic refinement optimization as described above.  2D and 3D points are represented as fixed vertices.  The pose to transform from stereo to omni frame is an SE(3) pose, in this case, one of the inbuilt g2o types.  A single edge joins a 2D and 3D point, along with the SE(3) calibration vertex, and calculates the reprojection error as follows:
+
+\begin{align}
+ \bv e = \bv z - \hat{\bv z}( ^{omni}\bv T_{stereo} \bv P_{stereo})
+\end{align}
+
+$\bv z$ represents 2D pixel coordinates of a single point in the omni image and $\hat{\bv z}$ projects a 3D world point to a 2D image point.
+
+By running the verification tool, many points may be logged, discarding outliers based on reprojection error from the initial calibration.  The g2o refinement may then be run, and after convergence the new result may then be verified.
 
 \section{Omni loop closure}
 
