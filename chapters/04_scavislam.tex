@@ -5,6 +5,13 @@ This chapter will describe the underlying SLAM system used for this work, \\ \mb
 
 The inner workings of ScaViSLAM may be broken up into three different modules, each of which runs in a seperate thread; the stereo frontend, SLAM graph backend and place recognition. These modules will be discussed here. In addition to the modules, the operation of the SLAM graph will be expanded on, as not only is this the main novelty of the ScaViSLAM algorithm, but is also very important in the context of the contribution of this work. The main interface between the algorithm presented in this work and ScaViSLAM system is by adding information to the SLAM graph.
 
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.8\textwidth]{chapters/images/scavislam_gui}
+    \caption{ScaViSLAM visualization.  The left shows tracking against the current keyframe using an image pyramid.  On the right is a visualization of the SLAM graph}
+  \label{fig:scavislam_gui}
+\end{figure}
+
 \section{Frontend}
 \label{sec:scavislam_frontend}
 
@@ -14,7 +21,7 @@ The frontend is responsible for calculating visual odometry.  It also finds land
 
 %TODO: brief/fast citation
 
-To calculate an initial transformation between frames, first a disparity image is calculated using dense stereo matching, then dense stereo tracking is performed.  Both of these operations are done on the GPU.  After an initial transformation has been estimated, landmarks are matched used guided BRIEF (citation) at FAST (citation) corners locations.  Matching is done on multiple image pyramid levels to enable some degree of scale invariance. Selection of landmarks will be discussed in the following section.  Image patches of landmarks are warped into the current perspective by using the current transformation to improve matching. Having matched enough points against current and previous keyframes, a refined pose is calculated by minimising reprojection error over all point correspondences.
+To calculate an initial transformation between frames, first a disparity image is calculated using dense stereo matching, then dense stereo tracking is performed.  Both of these operations are done on the GPU.  After an initial transformation has been estimated, landmarks are matched used guided BRIEF (citation) at FAST (citation) corners locations.  Matching is done on multiple image pyramid levels to allow features of various scales. Selection of landmarks will be discussed in the following section.  Image patches of landmarks are warped into the current perspective by using the current transformation to improve matching. Having matched enough points against current and previous keyframes, a refined pose is calculated by minimising reprojection error over all point correspondences.
 
 \subsection{Tracking points}
 
@@ -93,10 +100,10 @@ The edges which represent observations of landmarks are multi edges between the 
 
 %TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
 \begin{align}
- \bv e = \bv z - \hat{\bv z}( ^{kf}\bv T_w \ ^w \bv T_{anchor} \ \bv L_{anchor})
+ \bv e = \bv z_o - \hat{\bv z}( ^{o}\bv T_w \ ^w \bv T_{a} \ \bv L_{a})
 \end{align}
 
-$\bv z$ is the edge constraint stored as the pixel coordinates of the landmark in left and right frame. $\bv L_{anchor}$ is the landmark in the anchor frame (landmark vertex).  $^w \bv T_{anchor}$ is the transform from the anchor keyframe to world frame (anchor keyframe vertex), and $^{kf}\bv T_w$ is the transformation from the world frame to the keyframe where this particular edge was recorded (observation keyframe).  The $\hat{\bv z}$ function uses intrinsic camera calibration parameters and projects a 3D point into image pixel coordinates.
+$\bv z_o$ is the edge constraint stored as the pixel coordinates of the landmark in left and right frame seen from the observation  frame. $\bv L_{a}$ is the landmark in the anchor frame (landmark vertex).  $^w \bv T_{a}$ is the transform from the anchor keyframe to world frame (anchor keyframe vertex), and $^{o}\bv T_w$ is the transformation from the world frame to the observation keyframe -  where this particular edge was recorded.  The $\hat{\bv z}$ function uses intrinsic camera calibration parameters and projects a 3D point into image pixel coordinates.
 
 \subsection{Outer Window}
 
@@ -105,7 +112,7 @@ Unlike the bundle adjustment of the inner window, the outer window is a simple p
 %TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
 \begin{align}
  v_{ab} &=  \log(^{w}\bv T_{a} \ ^{a} \bv T_{b} \ ^{b} \bv T_{w}) \\
- \bv e &= v_{ab}^T \ \Lambda \ v_{ab}
+ \bv e &= v_{ab}^T \ \Lambda_{ab} \ v_{ab}
 \end{align}
 
 \begin{figure}[h!]
@@ -126,7 +133,7 @@ To calculate the double window, the current frame is first selected, and then a 
 
 \begin{figure}[h!]
   \centering
-    %\includegraphics[width=1.0\textwidth]{chapters/images/double_win}
+    \includegraphics[width=1.0\textwidth]{chapters/images/double_win}
   \caption{Double Window}
   \label{fig:double_window}
 \end{figure}
