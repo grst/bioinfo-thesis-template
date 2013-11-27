@@ -58,7 +58,6 @@ A potential improvement to stereo tracking would be to initialize landmarks with
 \subsubsection{Omni-camera for loop closure (fuck yeah!)}
 
 The idea here is to use the omni camera to find global loop closures where the stereo camera normally wouldn't.  The omni directional can match frames regardless of rotation about the upward facing axis, due to the 360$^{\circ}$ view.  (fig \ref{fig:omni_loop_close}) This means that for robots driving on a ground plane, it could recognize and even match frames regardless of the robots orientation.
-%TODO: add my pictures
 
 \begin{figure}[h!]
   \centering
@@ -73,9 +72,10 @@ The idea here is to use the omni camera to find global loop closures where the s
 Another idea is to combine all camera images at the lowest level to enable a tight sensor integration.  A naive implementation of this would be to use a mono SLAM system and treat the images from extras cameras as extra frames.  This could be improved upon by considering the fixed geometry between cameras.
 
 \subsection{Selected Approaches}
+\label{subsec:selected_approach}
 
 When developing an online SLAM system, a very important factor to consider is visual odometry drift.  Even with high accuarcy tracking, there will always be some small error which will propagate and over time and cause the trajectory and map to deteriorate. It is likely that tracking accuracy and robustness can be improved by combining stereo and omni cameras in the visual odometry stage, however drift will still occur.
 
 Therefore it is conceivable that the most significant improvement may be made by improving the instances and quality of loop closures to correct for drift.  As a result the Omni camera for loop closure has been selected as the approach for this work.  However this approach is not so trivial, as the non metric scale issues still exists.  This problem will be addressed in this work.
 
-In addition to this approach, a naive combination of all cameras in a mono SLAM framework is very straight forward, given a working SLAM system.  Therefore this method will also be tried and evaluated using an existing mono SLAM framework.
+In addition to this approach, a naive combination of all cameras in a mono SLAM framework is very straight forward, given a working SLAM system.  Therefore this method will also be tried out and evaluated using an existing mono SLAM framework.

@@ -1,11 +1,9 @@
-\chapter{Omni Stereo Camera Fusion}
-\label{chapter:omni_stereo_fusion}
-
-\section{Extrinsics for multiple camera systems}
+\chapter{Extrinsic Calibration}
+\label{chapter:extrinsic_calibration}
 
 In order to combine cameras together in one framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate, as even a very small rotational offset will result in a significant reprojection error when reprojecting points from one camera to another.
 
-\subsection{Extrinsic Calibration}
+\section{Extrinsic calibration tool}
 
 %TODO: understand this better
 
@@ -18,7 +16,7 @@ An extrinsic calibration between multiple perspective cameras can be performed g
   \label{fig:extrinsic_cal_1}
 \end{figure}
 
-\subsection{Undistorted Perspective Image from Omni-Camera}
+\section{Undistorted Perspective Image from Omni-Camera}
 
 The package as described above for the extrinsic calibration works only for perspective cameras. This means cameras for which the intrinsic parameters are known and images are rectified such that all straight lines appear straight, and each pixel can be mapped to a 3D ray.  However this is not the case for the omni camera.  Both the original donut image and unwrapped circular image are distorted and can not be used by the camera pose calibration package.  Therefore a new camera projection for the omni cam is necessary, to represent part of the omni image as a perspective type projection.
 
@@ -32,12 +30,12 @@ An algorithm was developed to create a perspective image for calibration from th
  // perspective image to populate \\
  $u_c = cols/2$;  \\
  $v_c = rows/2$;  \\
- Define $\bv F_{ray}$; \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
- // points to the center of desired perspective image \\
+ Define $\bv F_{ray}$; \ \ \ \ \ 
+ // vector that points to center of desired perspective image \\
  $\bv F_{ray} = \bv F_{ray}.normalize()$ * focal length; \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \\
  %// set $\norm {\bv F_{ray}} $ to focal length \\
- Define $\bv u$ and $\bv v$; \ \ \ \ \ \ \ \  
- // orthogonal to $\bv F_{ray}$, both vectors define image plane \\
+ Define $\bv u$ and $\bv v$; \ \ \ \ \ \ \ \ 
+ //vectors orthogonal to $\bv F_{ray}$ that define image plane \\
  $\bv u$.normalize(); \\
  $\bv v$.normalize(); \\
  \For{v = 0 to rows}
@@ -62,12 +60,12 @@ An algorithm was developed to create a perspective image for calibration from th
 
 The focal length will be the desired focal length of the new perspective image, this can be defined by the user.  The size of the perspective image $\bv I(cols, rows)$ may also be defined by the user.  The function project($\bv P$) takes a 3D ray $\bv P$ and projects it to 2D pixel coordinates.  The pixel coordinates returned will be represented as floating point variables.  Therefore, the function bilinearInterpolate($\bv P$) takes these pixel coordinates and produces an approximation of the intensity at these coordinates from the unwrapped image using bilinear interpolation.
 
-In practice the rays will always be the same once parameters are set.  Therefore the rays are pre-calculated in the form of a perspective pixel coordinate to omni pixel coordinate lookup table.
+In practice the rays will be the same for a set of perspective image parameters.  Therefore the rays are pre-calculated in the form of a perspective pixel coordinate to omni pixel coordinate lookup table.
 
 The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is fairly trivial, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. %TODO long sentence
 
 
-\subsection{Online validation of extrinsic calibration}
+\section{Online validation of extrinsic calibration}
 
 Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilized.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then by reprojected into the omni camera image using the extrinsic calibration.
 
@@ -82,7 +80,7 @@ A verification tool was developed to perform this operation.  Circular matching 
 
 This tool also serves a second purpose; mainly to log all of 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.
 
-\subsection{g2o non linear extrinsic refinement}
+\section{g2o non linear extrinsic refinement}
 
 A simple g2o graph was implemented to perform the extrinsic refinement optimization as described above.  2D and 3D points are represented as fixed vertices.  The pose to transform from stereo to omni frame is an SE(3) pose, in this case, one of the inbuilt g2o types.  A single edge joins a 2D and 3D point, along with the SE(3) calibration vertex, and calculates the reprojection error as follows:
 
@@ -100,32 +98,3 @@ By running the verification tool, many points may be logged, discarding outliers
   \caption{3D visualization of the g2o non linear extrinsic optimization.  The rays represent features extracted from the omni image, and the points are 3D stereo points.  Ideally the rays should intersect through their corresponding points}
   \label{fig:g2o_cal_vis}
 \end{figure}
-
-\section{Omni loop closure}
-
-\subsection{Place Recognition}
-
-The first step is to substitute omni camera images in the place recognition module. The donut image format is not preferred for the place recognition.  They contains blind spots (inner and outer circle), which contain some texture, and are also susceptible to change from internal reflections within the lense.  In terms of place recognition, this would add noise to each image and therefore the unwrapped image is preferred.
-
-It is computational expensive to unwrap every frame, this means processing 1280x960 images at 30Hz.  This would also introduce complications in synchronizing stereo frames with omni frames.  Therefore only keyframe images are unwrapped.  A omni camera image buffer records a short history of donut image frames.  When a new keyframe is created, the timestamp of the stereo image used for this keyframe is sent to the buffer, which finds the corresponding omni camera image and unwraps it.  This unwrapped image is saved with the keyframe and sent to the place recognition module.  This reduces computational cost and simplifies omni-stereo synchronization.
-
-As described in section \ref{sec:bag_of_words}, the place recognition system employs clustering of detected SURF features in feature space using a bag of words approach.  This means that in the case of $360^\circ$ circular images, it will be invariant to rotation about the upward facing axis, as the locations of 2D features are not considered.  This is ideal for this particular use case.
-
-\subsection{Scale Correction algorithm}
-
-\begin{itemize}
-\itemsep0em
- \item omni-omni matching
- \item 5 point algorithm, transformation and 3d points
- \item circular matching between left/right/omni
- \item re triangulate points which are matched with stereo
- \item calculate scale offset by comparing 3d stereo point with non metric triangulated point
- \item repeat over all points, calculate a robust mean scale offset
- \item apply offset to transform from omni-omni. Add it to the graph
-\end{itemize}
-
-\subsection{p3p Implementation}
-
-An alternative to the 
-
-\subsection{Introducing loop closure constraints to the SLAM graph}
