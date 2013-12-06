@@ -10,6 +10,7 @@ It is computational expensive to unwrap every frame, this would mean processing 
 As described in section \ref{sec:bag_of_words}, the place recognition system employs clustering of detected SURF features in feature space using a bag of words approach.  This means that in the case of $360^\circ$ circular images, it will be invariant to rotation about the upward facing axis, as the locations of 2D features are not considered.  This is ideal for this particular use case.
 
 \section{Calculating transformations for loop closures}
+\label{sec:calc_loop_edge}
 
 A match from the place recognition module itself is not enough to do a global loop closure.  As described in section \ref{sec:scavislam_place_recog}, a geometry check is required to filter false positive matches and determine a metric rigid body transformation so the loop closure may be added to the graph.
 
@@ -114,11 +115,11 @@ This will directly calculate a pose between the two keyframes to the correct sca
 
 \subsection{Comparing methods}
 
-In practice the p3p turns out to be not as accurate as the scale adjustment algorithm.  The number of matches between the stereo camera and the omni camera of the other keyframe is typically very low.  Not only is the matching between different cameras, resulting in differing scale and lighting of feature patches, there is also a larger translation between cameras. Whilst in the scale correction algorithm, these matches are only used for scale adjustment, in the p3p pipeline they are used for pose estimation.  Scale adjustment only requires 1 correspondence, however pose estimation requires 3.  There are likely to be outliers and therefore desirably a multiple of the minimal number of correspondences is needed to determine a good pose.
+In practice the p3p turns out to be not as accurate as the scale adjustment algorithm.  The number of matches between the stereo camera and the omni camera of the other keyframe is typically very low.  Not only is matching occuring between different cameras, resulting in differing scale and intensities of feature patches, but there is also a larger translation between cameras. Whilst in the scale correction algorithm, these matches are only used for scale adjustment, in the p3p pipeline they are used for pose estimation.  Scale adjustment only requires 1 correspondence, however pose estimation requires 3.  There are likely to be outliers and therefore desirably a multiple of the minimal number of correspondences is needed to determine a good pose.
 
 The scale adjustment algorithm uses all the matches between two omni poses to calculate a transform.  In later evaluations this is shown to be typically well over 100 inliers for pose estimation.  This results in a highly accurate transformation.  The rotation part of the transform does not need to be scaled and can be used directly.  As stated above, only one point is required to determine the scale offset so scale adjustment should be accurate even with few matches.
 
-Finally another advantage of the scale adjustment algorithm is the way in which the data from both frames is fused.  For both algorithms, they can be run twice using first one keyframe, and then the other. (see fig. \ref{fig:p3p_flowchart} and fig. \ref{fig:p3p_flowchart})  Whilst the scale adjustment algorithm outputs two offset vectors that can easily be combined to determine a single robust offset value, the p3p implementation generates two separate poses that need to be fused together somehow.  They could be averaged or both added to the graph weighted on the number of inliers. Nevertheless incorporating all available data into calculating one transform should achieve better results than calculating two not as accurate poses and averaging them together.
+Finally another advantage of the scale adjustment algorithm is the way in which the data from both frames is fused.  For both algorithms, they can be run twice using first one keyframe, and then the other. (see fig. \ref{fig:scale_adjust_flowchart} and fig. \ref{fig:p3p_flowchart})  Whilst the scale adjustment algorithm outputs two offset vectors that can easily be combined to determine a single robust offset value, the p3p implementation generates two separate poses that need to be fused together somehow.  They could be averaged or both added to the graph weighted on the number of inliers. Nevertheless incorporating all available data into calculating one transform should achieve better results than calculating two not as accurate poses and averaging them together.
 
 \begin{figure}[H]
   \centering
@@ -132,13 +133,13 @@ Finally another advantage of the scale adjustment algorithm is the way in which 
 \end{figure}
 \section{Introducing loop closure constraints to the SLAM graph}
 
-Having obtained a transformation between frames, this needs to be integrated into the SLAM graph somehow.  This is not so trivial, especially given that the ScaViSLAM graph utilises the double window approach.  (Sec. \ref{sec:scavislam_graph}).  This section outlines how the edge was added to the graph.
+Having obtained a transformation between frames, this needs to be integrated into the SLAM graph somehow.  This is not so trivial, especially given that the ScaViSLAM graph utilises the double window approach.  (Sec. \ref{sec:scavislam_graph}).  This section outlines how an edge was added to the graph.
 
 \subsection{Bundle Adjustment vs Pose-Pose edge}
 
-The section above describes returning a single SE(3) edge constraint between keyframes.  It would also be possible to instead add the shared observations as 3D landmarks initialized to the correct scale and add observations to these in the form of reprojection edge constraints.  The graph optimization would then calculate the relative pose constraint based on all shared observations, as per a typical bundle adjustment.  The advantage of this is that it better represents the constraint between keyframes.  A keyframe edge could theoretically represent the exact same constraint, however the information matrix for this edge would need to be explicitly calculated.  In addition, this would work well for the p3p pipeline, as it would solve the problem of how to combine two separate transformations.  Using this representation, consecutive loop closures could add even more observations to existing landmarks to further refine the poses.  However, in order to achieve this, the data association for all landmarks would need to be handled.  This essentially means building a whole new SLAM system, which is out of the scope of this work.
+Section \ref{sec:calc_loop_edge} describes returning a single SE(3) edge constraint between keyframes.  This edge can easily be added to the graph.  It would also be just as valid for the pipeline to provide 3D landmarks and shared observations as an output.  In this case the 3D landmarks would be added to the graph as vertices and the shared observations would be added as reprojection edge constraints.  The graph optimization would then calculate the relative pose constraint based on all shared observations, as per a typical bundle adjustment.  The advantage of this is that it more accurately represents the constraint between keyframes than an SE(3) edge  with an estimated information matrix.  In addition, this would work well for the p3p pipeline, as it would solve the problem of how to combine two separate transformations.  Using this representation, consecutive loop closures could add even more observations to existing landmarks to further refine the poses.  However, in order to achieve this, the data association for all landmarks would need to be handled.  This essentially means building a whole new SLAM system, which is out of the scope of this work.
 
-Given that no data association will be done between multiple loop closures, there is little advantage of calculating the constraint using bundle adjustment.  Calculating a keyframe pose-pose edge and estimating the information matrix closely approximates the constraint and is also far more computationally efficient.  Implementing the bundle adjustment, accounting for the double window approach would also be considerably more effort than SE(3) edges.
+Given that no data association will be done between multiple loop closures, there is little advantage of calculating the constraint using bundle adjustment.  Calculating a keyframe pose-pose edge and estimating the information matrix closely approximates the constraint and is also far more computationally efficient.  Finally, implementing the bundle adjustment, accounting for the double window approach would also be considerably more effort than SE(3) edges.
 
 \subsection{Adding the pose to the inner window}
 
@@ -148,7 +149,7 @@ The place recognition module will return potential loop closures for the most re
   \centering
     \includegraphics[width=0.49\textwidth]{chapters/images/before_opt}
     \includegraphics[width=0.49\textwidth]{chapters/images/after_opt}
-  \caption{Adding a SE(3) edge to the inner window.  Black dots denote landmarks.  The green line denotes the SE(3) loop closure edge}
+  \caption{Adding a SE(3) edge to the inner window.  Black dots denote landmarks.  The green line is the SE(3) loop closure edge}
   \label{fig:graph_fail}
 \end{figure}
 
