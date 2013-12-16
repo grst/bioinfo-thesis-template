@@ -141,24 +141,24 @@ Section \ref{sec:calc_loop_edge} describes returning a single SE(3) edge constra
 
 Given that no data association will be done between multiple loop closures, there is little advantage of calculating the constraint using bundle adjustment.  Calculating a keyframe pose-pose edge and estimating the information matrix closely approximates the constraint and is also far more computationally efficient.  Finally, implementing the bundle adjustment, accounting for the double window approach would also be considerably more effort than SE(3) edges.
 
-\subsection{Adding the pose to the inner window}
+%\subsection{Adding the pose to the inner window}
 
-The place recognition module will return potential loop closures for the most recently added keyframe.  If a loop closure is successful, this means it will connect to a keyframe in the inner window.  However adding a single edge to the inner window will have little affect, as there will be too many landmark observation constraints opposing this edge.  If the stiffness of the new constraint is set high enough, the particular keyframe will be pulled towards the direction of the loop closure, but all the other keyframes will remain in place. (fig. \ref{fig:graph_fail})
+%The place recognition module will return potential loop closures for the most recently added keyframe.  If a loop closure is successful, this means it will connect to a keyframe in the inner window.  However adding a single edge to the inner window will have little affect, as there will be too many landmark observation constraints opposing this edge.  If the stiffness of the new constraint is set high enough, the particular keyframe will be pulled towards the direction of the loop closure, but all the other keyframes will remain in place. (fig. \ref{fig:graph_fail})
 
-\begin{figure}[H]
-  \centering
-    \includegraphics[width=0.49\textwidth]{chapters/images/before_opt}
-    \includegraphics[width=0.49\textwidth]{chapters/images/after_opt}
-  \caption{Adding a SE(3) edge to the inner window.  Black dots denote landmarks.  The green line is the SE(3) loop closure edge}
-  \label{fig:graph_fail}
-\end{figure}
+%\begin{figure}[H]
+%  \centering
+%    \includegraphics[width=0.49\textwidth]{chapters/images/before_opt}
+%    \includegraphics[width=0.49\textwidth]{chapters/images/after_opt}
+%  \caption{Adding a SE(3) edge to the inner window.  Black dots denote landmarks.  The green line is the SE(3) loop closure edge}
+%  \label{fig:graph_fail}
+%\end{figure}
 
-In order to deal with this problem, after adding a loop closure edge, the graph is 'reinitialised' to a new configuration using SE(3) edge only optimization.  The entire inner window is marginalised to SE(3) edges, as they would be when leaving the inner window.  This is essentially the same as changing the inner window size to 1.  Then optimization is performed, this time with the loop closure edge having a more equal weighting to the rest of the constraints.  The graph error is then spread evenly throughout the graph, and the current pose is moved to the loop closure keyframe.  Having completed this optimization, the inner window is restored and the graph retains its structure.
+%In order to deal with this problem, after adding a loop closure edge, the graph is 'reinitialised' to a new configuration using SE(3) edge only optimization.  The entire inner window is marginalised to SE(3) edges, as they would be when leaving the inner window.  This is essentially the same as changing the inner window size to 1.  Then optimization is performed, this time with the loop closure edge having a more equal weighting to the rest of the constraints.  The graph error is then spread evenly throughout the graph, and the current pose is moved to the loop closure keyframe.  Having completed this optimization, the inner window is restored and the graph retains its structure.
 
-\begin{figure}[H]
-  \centering
-    \includegraphics[width=0.45\textwidth]{chapters/images/before_opt_good}
-    \includegraphics[width=0.45\textwidth]{chapters/images/after_opt_good}
-  \caption{Before and after optimization using pose only constraints}
-  \label{fig:graph_fail}
-\end{figure}
+%\begin{figure}[H]
+%  \centering
+%    \includegraphics[width=0.45\textwidth]{chapters/images/before_opt_good}
+%    \includegraphics[width=0.45\textwidth]{chapters/images/after_opt_good}
+%  \caption{Before and after optimization using pose only constraints}
+%  \label{fig:graph_fail}
+%\end{figure}

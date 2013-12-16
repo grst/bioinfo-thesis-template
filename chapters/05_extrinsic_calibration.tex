@@ -4,7 +4,7 @@
 In order to combine cameras together in one framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate, as even a very small rotational offset will result in a significant reprojection error when reprojecting points from one camera to another.
 
 \section{Extrinsic calibration tool}
-
+\label{sec:ros_tool}
 %TODO: understand this better
 
 An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from both cameras, a non linear optimization to determine the 6D transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package.\footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}.  This package was utilized in order to obtain a initial estimate of the transformation from stereo to omni camera.
@@ -62,14 +62,22 @@ The focal length will be the desired focal length of the new perspective image, 
 
 In practice the rays will be the same for a set of perspective image parameters.  Therefore the rays are pre-calculated in the form of a perspective pixel coordinate to omni pixel coordinate lookup table.
 
+\begin{figure}[b!]
+  \centering
+    \includegraphics[width=0.32\textwidth]{chapters/images/omni_raw_office}
+    \includegraphics[width=0.32\textwidth]{chapters/images/unwrapped_office}
+    \includegraphics[width=0.32\textwidth]{chapters/images/perspective_office}
+  \caption{Left: Original omni camera image with lines denoting a section.  Center: That particular section from the unwrapped image.  Right: Perspective image of the same section.  Note that all the lines are straight in the perspective image, whereas they are distorted in both the original omni and unwrapped image.}
+  \label{fig:omni_images}
+\end{figure}
+
 The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is fairly trivial, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. %TODO long sentence
 
 
 \section{Online validation of extrinsic calibration}
+\label{sec:verification_tool}
 
 Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilized.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then by reprojected into the omni camera image using the extrinsic calibration.
-
-A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  These points are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a framerate of about 1-2Hz (low framerate due to feature extraction and circular matching).  Nevertheless it is useful in verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
 
 \begin{figure}[h!]
   \centering
@@ -78,23 +86,72 @@ A verification tool was developed to perform this operation.  Circular matching 
   \label{fig:circ_matches}
 \end{figure}
 
-This tool also serves a second purpose; mainly to log all of 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.
+A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  These points are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a framerate of about 1-2Hz (low framerate due to feature extraction and circular matching).  Nevertheless it is useful in verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
 
-\section{g2o non linear extrinsic refinement}
+This tool also serves a second purpose; mainly to log all of 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.  This calibration uses the known geometry of the stereo camera as opposed to known geometry of the checkerboard.  This means that any feature matched in both stereo frames and omni camera frame can be used as a data point for calibration.
 
-A simple g2o graph was implemented to perform the extrinsic refinement optimization as described above.  2D and 3D points are represented as fixed vertices.  The pose to transform from stereo to omni frame is an SE(3) pose, in this case, one of the inbuilt g2o types.  A single edge joins a 2D and 3D point, along with the SE(3) calibration vertex, and calculates the reprojection error as follows:
+\section{Non linear extrinsic refinement}
+
+In the setup used, the tool described in Secion \ref{sec:ros_tool} did not produce a satisfactory calibration; reprojection error was found to be as high as 12 pixels for valid matches.  The reason being is that the omni camera was mounted high above the stereo camera in order to maximise field of view.  However this meant that the overlap of both images was minimal, particularly indoors, where there was not enough space to move the checkerboard to different positions.  Therefore not enough checkerboard measurements could be recorded in order to achieve an accurate calibration.
+
+A simple g2o graph was implemented to perform the extrinsic refinement optimization as mentioned in Section \ref{sec:verification_tool}.  2D and 3D points are represented as fixed vertices.  The pose to transform from stereo to omni frame is an SE(3) pose, in this case, one of the inbuilt g2o types.  A single edge joins a 2D and 3D point, along with the SE(3) calibration vertex, and calculates the reprojection error as follows:
 
 \begin{align}
  \bv e = \bv z_{om} - \hat{\bv z}( ^{om}\bv T_{st} \bv P_{st})
 \end{align}
 
-$\bv z_{om}$ represents 2D pixel coordinates of a single point in the omni image and $\hat{\bv z}$ projects a 3D world point to a 2D image point.  $\bv P_{st}$ is a 3D point in the stereo frame and $^{om}\bv T_{st}$, which transforms a point from stereo to omni frame, is the transform to optimize over.
+$\bv z_{om}$ represents 2D pixel coordinates of a single point in the omni image and $\hat{\bv z}$ projects a 3D world point to a 2D image point.  $\bv P_{st}$ is a 3D point in the stereo frame and $^{om}\bv T_{st}$, which transforms a point from stereo to omni frame, is the transform to optimize over.  A 3D visualization of the non linear calibration can be seen in Fig. \ref{fig:g2o_cal_vis}
 
-By running the verification tool, many points may be logged, discarding outliers based on reprojection error from the initial calibration.  The g2o refinement may then be run, and after convergence the new result may then be verified.
 
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.7\textwidth]{chapters/images/g2o_cal_vis}
   \caption{3D visualization of the g2o non linear extrinsic optimization.  The rays represent features extracted from the omni image, and the points are 3D stereo points.  Ideally the rays should intersect through their corresponding points}
   \label{fig:g2o_cal_vis}
+\end{figure}
+
+To perform this calibration, data was collected using the online verfication tool.  An initial condition was obtained from the calibration produced from the tool mentioned in Section \ref{sec:ros_tool}.  After the non linear optimization converged, the new pose could be checked by the verfication tool.  A visualization of before and after optimization can be seen in Fig. \ref{fig:before_after_g2o}. 
+
+It was found that an important factor when using this calibration tool was to have points over the whole image space, and also with a wide variety of depth.  Initial calibrations showed excellent performance in terms of reprojection error on the data points used for calibration, however it was not stable for new points at different depths.  It was also noted that the geometry of the optimized pose was not representative of the real world pose between stereo and omni cameras.  
+
+Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection error results and the translation component of the pose using data collected in different areas.  'Indoors' denotes the dataset collected when the vehicle was inside, where all points were close. 'Outdoors' denotes data collected outdoors, namely the scene depicted in Fig. \ref{fig:before_after_g2o}, where all points were far away.  'Both' denotes both datasets combined together for optimization.
+
+\begin{center}
+    \begin{tabular}{ |p{6cm}|p{3cm}|p{3cm}| }% p{5cm} |}
+    \hline
+    & \multicolumn{2}{c|}{\bf{Average Reprojection error on dataset}}  \\ \hline
+    & \bf{Indoors} & \bf{Outside} \\ \hline
+    Optimized using Indoors & 0.425 & 87.050 \\ \hline
+    Optimized using Outdoors & 13.82 & 0.634 \\ \hline
+    Optimized using Both & 0.533 & 0.968 \\
+    \hline 
+    \end{tabular}
+  \captionof{table} {Reprojection errors for extrinsic optimization using different datasets} 
+  \label{tab:reprojection_error}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{ |p{6cm}|p{2cm}|p{2cm}|p{2cm}| }% p{5cm} |}
+    \hline
+    & \multicolumn{3}{c|}{\bf{Translation component from pose}}  \\
+    & \multicolumn{1}{c}{\bf{x(cm)}} & \multicolumn{1}{c}{\bf{y(cm)}} & \bf{z(cm)} \\ \hline
+    Rough Measurement & 10.0 & -100.0 & -50.0 \\ \hline
+    Optimized using Indoors & -36.4 & -85.0 & -18.5\\ \hline
+    Optimized using Outdoors & 11.2 & 43.0 & -37.1 \\ \hline
+    Optimized using Both & 13.0 & -92.5 & -46.9 \\ 
+    \hline 
+    \end{tabular}
+    \captionof{table}{Translational part of the transformation that transforms points from the stereo camera frame to the omni camera frame}
+  \label{tab:geometry}
+\end{center}
+
+These results show that a good calibration, both in terms of reprojection error and geometrical accuracy can be obtained by calibrating using data points of varying depth.
+Details of the exact calibration procedure used for evaluation can be found in Section \ref{chapter:system_setup}.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/verify_before_opt}
+    \includegraphics[width=1.0\textwidth]{chapters/images/verify_after_opt}
+  \caption{Before and after non linear optimization of the extrinsic calibration.  In this example the average reprojection error was reduced from 12.340 to 0.634}
+  \label{fig:before_after_g2o}
 \end{figure}
