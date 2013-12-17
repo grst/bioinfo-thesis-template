@@ -72,13 +72,28 @@ Points with metric scale are calculated using stereo matching.  These points are
 \end{figure}
 
 
-%TODO visualization of scale offsets
-
-%TODO visualization of 180 deg pose: slides from last intern meeting
-
 \subsubsection{Robust scale estimation}
 
-Having determined a number of scale offsets, a single offset needs to be determined.  It is likely that outliers exist in the data and these need to be considered.  A potential approach would be to apply RANSAC, choosing a single point and scaling the values and comparing them to their correspondences.  A simpler and less computationally expensive method would be to calculate a robust mean.  A robust mean is calculated in this case using some dude's robust mean algorithm (citation).
+Having determined a number of scale offsets, a single offset needs to be determined.  It is likely that outliers exist in the data and these need to be considered.  In addition to outliers, it is also important to consider the metric accuracy of each stereo point.  As points occur further away from the camera, the corresponding disparity decreases.  For low values of disparity, the resolution in depth decreases, and therefore the accuracy of scale estimation from this point is diminished. Fig. \ref{fig:scale_bar_graph} illustrates the relationship between scale offset accuracy and associated depth values.
+
+In order to compensate for outliers, first a robust mean is calculated using some dude's robust mean algorithm.  Outliers can then be identified by comparing them with the robust mean and removed from the list.
+
+To deal with the depth uncertainty of points, a weighted average is calculated as follows:
+
+\begin{equation}
+\centering
+s_{mean} = \dfrac{\displaystyle\sum\limits_{i=0}^N \dfrac{s_i}{z_i^2}}{\displaystyle\sum\limits_{i=0}^N \dfrac{1}{z_i^2}}}
+\end{equation}
+
+$s_i$ denotes a single scale offset, and $z_i$ is the corresponding depth value as calculated by stereo matching.  The idea behind this calculation is to provide weights inversely proportional to the depth of the point, such that distant points are heavily penalised.  Before applying this weighting strategy, the scale calculation was often over estimated and sometimes unstable.  This weighted mean function provided much more stable and accurate scale offsets.
+
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/scale_offset_bar_graph}\\
+  \caption{Scale offsets and corresponding depth values.  The scale offsets are blue with the units on the left and the depth values are orange with the unit in meters on the right. In this example the correct scale offset is about 6.  From the graph it is clear that scale offsets far off this offset are attributed with higher depth values.}
+  \label{fig:scale_bar_graph}
+\end{figure}
 
 %TODO robust mean citation
 
@@ -119,6 +134,15 @@ In practice the p3p turns out to be not as accurate as the scale adjustment algo
 
 The scale adjustment algorithm uses all the matches between two omni poses to calculate a transform.  In later evaluations this is shown to be typically well over 100 inliers for pose estimation.  This results in a highly accurate transformation.  The rotation part of the transform does not need to be scaled and can be used directly.  As stated above, only one point is required to determine the scale offset so scale adjustment should be accurate even with few matches.
 
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/scale_vs_p3p_1}\\
+  \caption{An example comparing pose estimation from p3p and scale adjustment algorithms}
+  \label{fig:p3p_flowchart}
+\end{figure}
+
+%TODO: change ground_truth to GPS
+
 Finally another advantage of the scale adjustment algorithm is the way in which the data from both frames is fused.  For both algorithms, they can be run twice using first one keyframe, and then the other. (see fig. \ref{fig:scale_adjust_flowchart} and fig. \ref{fig:p3p_flowchart})  Whilst the scale adjustment algorithm outputs two offset vectors that can easily be combined to determine a single robust offset value, the p3p implementation generates two separate poses that need to be fused together somehow.  They could be averaged or both added to the graph weighted on the number of inliers. Nevertheless incorporating all available data into calculating one transform should achieve better results than calculating two not as accurate poses and averaging them together.
 
 \begin{figure}[H]
@@ -141,24 +165,24 @@ Section \ref{sec:calc_loop_edge} describes returning a single SE(3) edge constra
 
 Given that no data association will be done between multiple loop closures, there is little advantage of calculating the constraint using bundle adjustment.  Calculating a keyframe pose-pose edge and estimating the information matrix closely approximates the constraint and is also far more computationally efficient.  Finally, implementing the bundle adjustment, accounting for the double window approach would also be considerably more effort than SE(3) edges.
 
-%\subsection{Adding the pose to the inner window}
+\subsection{Adding the pose to the inner window}
 
-%The place recognition module will return potential loop closures for the most recently added keyframe.  If a loop closure is successful, this means it will connect to a keyframe in the inner window.  However adding a single edge to the inner window will have little affect, as there will be too many landmark observation constraints opposing this edge.  If the stiffness of the new constraint is set high enough, the particular keyframe will be pulled towards the direction of the loop closure, but all the other keyframes will remain in place. (fig. \ref{fig:graph_fail})
+The place recognition module will return potential loop closures for the most recently added keyframe.  If a loop closure is successful, this means it will connect to a keyframe in the inner window.  However adding a single edge to the inner window will have little affect, as there will be too many landmark observation constraints opposing this edge.  Typically what happens is that the particular keyframe will be pulled in the direction of the loop closure, but all the other keyframes will remain in place. (fig. \ref{fig:graph_fail})
 
-%\begin{figure}[H]
-%  \centering
-%    \includegraphics[width=0.49\textwidth]{chapters/images/before_opt}
-%    \includegraphics[width=0.49\textwidth]{chapters/images/after_opt}
-%  \caption{Adding a SE(3) edge to the inner window.  Black dots denote landmarks.  The green line is the SE(3) loop closure edge}
-%  \label{fig:graph_fail}
-%\end{figure}
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.49\textwidth]{chapters/images/before_opt}
+    \includegraphics[width=0.49\textwidth]{chapters/images/after_opt}
+  \caption{Adding a SE(3) edge to the inner window.  Black dots denote landmarks.  The green line is the SE(3) loop closure edge}
+  \label{fig:graph_fail}
+\end{figure}
 
-%In order to deal with this problem, after adding a loop closure edge, the graph is 'reinitialised' to a new configuration using SE(3) edge only optimization.  The entire inner window is marginalised to SE(3) edges, as they would be when leaving the inner window.  This is essentially the same as changing the inner window size to 1.  Then optimization is performed, this time with the loop closure edge having a more equal weighting to the rest of the constraints.  The graph error is then spread evenly throughout the graph, and the current pose is moved to the loop closure keyframe.  Having completed this optimization, the inner window is restored and the graph retains its structure.
+In order to deal with this problem, after adding a loop closure edge, the graph is 'reinitialised' to a new configuration using SE(3) edge only optimization.  The entire inner window is marginalised to SE(3) edges, as they would be when leaving the inner window.  This is essentially the same as changing the inner window size to 1.  Then optimization is performed, this time with the loop closure edge having a more equal weighting to the rest of the constraints.  The graph error is then spread evenly throughout the graph, and the current pose is moved to the loop closure keyframe.  Having completed this optimization, the inner window is restored and the graph retains its structure.
 
-%\begin{figure}[H]
-%  \centering
-%    \includegraphics[width=0.45\textwidth]{chapters/images/before_opt_good}
-%    \includegraphics[width=0.45\textwidth]{chapters/images/after_opt_good}
-%  \caption{Before and after optimization using pose only constraints}
-%  \label{fig:graph_fail}
-%\end{figure}
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.45\textwidth]{chapters/images/before_opt_good}
+    \includegraphics[width=0.45\textwidth]{chapters/images/after_opt_good}
+  \caption{Before and after optimization using pose only constraints}
+  \label{fig:graph_fail}
+\end{figure}
