@@ -142,18 +142,15 @@ ask for matthias for relavent literature
 \label{subsec:horn}
 
 Umeyama (PCL) \newline 
-Horn (UVM)
-
+Horn (UVM) \newline
 
 \section{Place Recognition}
 \label{sec:bag_of_words}
-Bag of words
+Bag of words \\
+Vocabulary tree, Nister \\
+fabmap
 
 \section{Visual SLAM}
-
-%Cover this in abstract terms.  Talk about the theory, not implemtation.  Mention
-%PTAM and cite it.
-%No g2o here.
 
 Simulataneous Localization and Mapping (SLAM) is the technique of building a map of a previously
 unexplored area whilst simultaneously determining a position (localizing) within that map.  The
@@ -166,7 +163,15 @@ traditional approach for SLAM can be split into 4 steps.
 \end{enumerate}
 
 %TODO: cite kalman filter
-Feature extraction involves finding unique features within the sensor data, also known as landmarks, which can be later in future sensor measurements.  Data association is the process of matching these landmarks over multiple sensor readings, in essence tracking them.  Pose estimation involves using the information of how multiple landmarks moved over time with respect to the robot/sensor in order to determine how the robot moved with respect to those landmarks.  Finally, having determined a map of landmarks, and a pose with respect to those landmarks, a global optimization, or bundle adjustment, over all landmarks and robot poses may be performed in order to produce a globally consistent map and trajectory.  In the past this has commonly been done by using a kalman filter (cite) and by adding all landmarks to the system state. In more recent times graph optimization approaches have become popular as they scale much better to larger maps.
+Feature extraction involves finding unique features within the sensor data that can be later reidentified in future sensor readings.  These features denote individual observations of a landmark through the eyes of a sensor.  A landmark can be thought of as a real world object which can be observed by a sensor.  Data association is the process of matching multiple observations of a single landmark over multiple sensor readings, in essence tracking the landmarks.  Take for example a robot doing 2D indoor SLAM with a 2D laser scanner.  A simple feature would be corners detected in the laser data.  These are observations of real world corners between walls, or any object within range of the laser scanner that would cause a sharp angle to be observed.  These real corners or objects can be thought of as landmarks.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.8\textwidth]{chapters/images/2D_SLAM}
+  \caption{Simple generic SLAM representation }
+\end{figure}
+
+Pose estimation involves using the information of how multiple landmarks have moved over time with respect to the robot/sensor, in order to determine how the robot has moved with respect to those landmarks.  Finally, having determined a map of landmarks, and a pose with respect to those landmarks, a global optimization over all landmarks and robot poses may be performed in order to produce a globally consistent map and trajectory.  In the past this has commonly been done by using a kalman filter (cite) and by adding all landmarks to the system state. In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state as per filtering.  This has been proved to improve accuracy of SLAM systems.  (cite hauke why filter).
 
 SLAM has taken many forms depending on sensors available. Visual SLAM denotes performing SLAM using some kind of camera.  In recent times, a plethora of visual SLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.  A keyframe SLAM system similar in concept to the PTAM approach has been utilised as the basis for this work.  The basic operation for this style of SLAM will be outlined here.
 
