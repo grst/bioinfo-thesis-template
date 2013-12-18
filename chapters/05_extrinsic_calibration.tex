@@ -91,6 +91,7 @@ A verification tool was developed to perform this operation.  Circular matching 
 This tool also serves a second purpose; mainly to log all of 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.  This calibration uses the known geometry of the stereo camera as opposed to known geometry of the checkerboard.  This means that any feature matched in both stereo frames and omni camera frame can be used as a data point for calibration.
 
 \section{Non linear extrinsic refinement}
+\label{sec:g2o_extrinsic_cal}
 
 In the setup used, the tool described in Secion \ref{sec:ros_tool} did not produce a satisfactory calibration; reprojection error was found to be as high as 12 pixels for valid matches.  The reason being is that the omni camera was mounted high above the stereo camera in order to maximise field of view.  However this meant that the overlap of both images was minimal, particularly indoors, where there was not enough space to move the checkerboard to different positions.  Therefore not enough checkerboard measurements could be recorded in order to achieve an accurate calibration.
 
@@ -116,34 +117,34 @@ It was found that an important factor when using this calibration tool was to ha
 
 Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection error results and the translation component of the pose using data collected in different areas.  'Indoors' denotes the dataset collected when the vehicle was inside, where all points were close. 'Outdoors' denotes data collected outdoors, namely the scene depicted in Fig. \ref{fig:before_after_g2o}, where all points were far away.  'Both' denotes both datasets combined together for optimization.
 
-\begin{center}
-    \begin{tabular}{ |p{6cm}|p{3cm}|p{3cm}| }% p{5cm} |}
-    \hline
-    & \multicolumn{2}{c|}{\bf{Average Reprojection error on dataset}}  \\ \hline
-    & \bf{Indoors} & \bf{Outside} \\ \hline
-    Optimized using Indoors & 0.425 & 87.050 \\ \hline
-    Optimized using Outdoors & 13.82 & 0.634 \\ \hline
-    Optimized using Both & 0.533 & 0.968 \\
-    \hline 
-    \end{tabular}
-  \captionof{table} {Reprojection errors for extrinsic optimization using different datasets} 
-  \label{tab:reprojection_error}
-\end{center}
+% \begin{center}
+%     \begin{tabular}{ |p{6cm}|p{3cm}|p{3cm}| }% p{5cm} |}
+%     \hline
+%     & \multicolumn{4}{r}{\bf{Average Reprojection error on dataset}}  \\
+%     & \bf{Indoors} & \bf{Outside} \\
+%     Optimized using Indoors & 0.425 & 87.050 \\
+%     Optimized using Outdoors & 13.82 & 0.634 \\
+%     Optimized using Both & 0.533 & 0.968 \\ 
+%     \end{tabular}
+%   \captionof{table} {Reprojection errors for extrinsic optimization using different datasets} 
+%   \label{tab:reprojection_error}
+% \end{center}
 
-\begin{center}
-    \begin{tabular}{ |p{6cm}|p{2cm}|p{2cm}|p{2cm}| }% p{5cm} |}
-    \hline
-    & \multicolumn{3}{c|}{\bf{Translation component from pose}}  \\
-    & \multicolumn{1}{c}{\bf{x(cm)}} & \multicolumn{1}{c}{\bf{y(cm)}} & \bf{z(cm)} \\ \hline
-    Rough Measurement & 10.0 & -100.0 & -50.0 \\ \hline
-    Optimized using Indoors & -36.4 & -85.0 & -18.5\\ \hline
-    Optimized using Outdoors & 11.2 & 43.0 & -37.1 \\ \hline
+\begin{table}[H]
+    \begin{tabular}{ p{6cm} r r r} % p{5cm} |}
+    \toprule
+    & \multicolumn{3}{r}{\bf{Translation component from pose}}  \\
+    & \multicolumn{1}{c}{\hspace*{1cm}\bf{x (cm)}} & \multicolumn{1}{c}{\hspace*{1cm}\bf{y (cm)}} & \hspace*{1cm}\bf{z (cm)} \\
+    \midrule
+    Rough Measurement & 10.0 & -100.0 & -50.0 \\
+    Optimized using Indoors & -36.4 & -85.0 & -18.5\\
+    Optimized using Outdoors & 11.2 & 43.0 & -37.1 \\
     Optimized using Both & 13.0 & -92.5 & -46.9 \\ 
-    \hline 
+    \bottomrule
     \end{tabular}
     \captionof{table}{Translational part of the transformation that transforms points from the stereo camera frame to the omni camera frame}
   \label{tab:geometry}
-\end{center}
+\end{table}
 
 These results show that a good calibration, both in terms of reprojection error and geometrical accuracy can be obtained by calibrating using data points of varying depth.
 Details of the exact calibration procedure used for evaluation can be found in Section \ref{chapter:system_setup}.
