@@ -74,14 +74,20 @@ Points with metric scale are calculated using stereo matching.  These points are
 
 \subsubsection{Robust scale estimation}
 
-Having determined a number of scale offsets, a single offset needs to be determined.  It is likely that outliers exist in the data and these need to be considered.  In addition to outliers, it is also important to consider the metric accuracy of each stereo point.  As points occur further away from the camera, the corresponding disparity decreases.  For low values of disparity, the resolution in depth decreases, and therefore the accuracy of scale estimation from this point is diminished. Fig. \ref{fig:scale_bar_graph} illustrates the relationship between scale offset accuracy and associated depth values.
-
+Having determined a number of scale offsets, a single offset needs to be determined.  It is likely that outliers exist in the data and these need to be considered.  In addition to outliers, it is also important to consider the metric accuracy of each stereo point.  As points occur further away from the camera, the corresponding disparity decreases.  For low values of disparity, the resolution in depth decreases quadratically, and therefore the accuracy of scale estimation from this point diminishes. Fig. \ref{fig:scale_bar_graph} illustrates the relationship between scale offset accuracy and associated depth values.
 \begin{figure}[h]
   \centering
-    \includegraphics[width=1.0\textwidth]{chapters/images/scale_offset_bar_graph}\\
-  \caption{Scale offsets and corresponding depth values.  The scale offsets are blue with the units on the left and the depth values are orange with the units in meters on the right. In this example the correct scale offset was determined to be 6.11.  From the graph it is clear that scale offsets that differ significantly from the correct offset value are attributed with higher depth values.}
+    \includegraphics[width=1.0\textwidth]{chapters/images/distance_vs_scale_error}\\
+  \caption{Point depth vs scale offset error}
   \label{fig:scale_bar_graph}
 \end{figure}
+
+%\begin{figure}[h]
+  %\centering
+    %\includegraphics[width=1.0\textwidth]{chapters/images/scale_offset_bar_graph}\\
+  %\caption{Scale offsets and corresponding depth values.  The scale offsets are blue with the units on the left and the depth values are orange with the units in meters on the right. In this example the correct scale offset was determined to be 6.11.  From the graph it is clear that scale offsets that differ significantly from the correct offset value are attributed with higher depth values.}
+  %\label{fig:scale_bar_graph}
+%\end{figure}
 
 It would be possible to apply RANSAC in this case, choosing a random scale offset to scale all of the points and using the sum of euclidean distance between correspondences as an error function.  This would be computationally expensive, and also requires parameter tuning.  So rather a 'weighted mean' strategy was applied, after having explicitly handled the outliers.
 
