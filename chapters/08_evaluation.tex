@@ -88,32 +88,119 @@ The ATE provides a good measure of complete trajectory accuracy and therefore sh
 
 \section{Experiments}
 
-\subsection{Routes choose}
+%\subsection{Data Collection Area}
+
+%For all data to be evaluated, a car park was choosen.
+
+\subsection{Routes}
 
 Two routes were selected for the evaluation.  The first 'two loops' dataset involved driving a small loop around two buildings, doing a three point turn, and then traversing the loop backwards to the start.  The idea behind this dataset is to not provide any chances for normal loop closures, whereby normal loop closures means the camera has a similar pose for both frames and the loop closure could be obtained with a standard stereo camera.  Therefor the omni-loop-closure pipeline should provide a very demonstrable improvement over the standard ScaViSLAM system.
 
-The second route 'carpark loops', involves driving loops around 3 buildings and part of a carpark.  This provides a number of normal and opposite direction loop closures and therefore provides a longer evaluation sequence where the standard ScaViSLAM system should be able to perform well.
+The second route 'car park loops', involves driving loops around 3 buildings and part of a car park.  This provides a number of normal and opposite direction loop closures and therefore provides a longer evaluation sequence where the standard ScaViSLAM system should be able to perform well.
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.5\textwidth]{chapters/images/two_loops_overlay}
-  \caption{Overlay of the route on satellite imagery}
+    \includegraphics[width=0.553\textwidth]{chapters/images/two_loops_overlay}
+    \includegraphics[width=0.437\textwidth]{chapters/images/carpark_loops_overlay}
+  \caption{Overlay of the GPS ground truth on satellite imagery for both routes}
 \end{figure}
 
-\begin{itemize}
-\item planned routes
-\item driving conditions
-\item size, time, length etc.
-\end{itemize}
+\begin{table}[H]
+    \begin{tabular}{ p{8.5cm} r r} % p{5cm} |}
+    \toprule
+    & Two loops & Carpark loops \\
+    \midrule
+    Total Distance & 1132m & 2167m \\
+    Overlapping distance (driving in either direction)& 553m & 1085m \\
+    Overlapping distance (driving the same direction)& 0m & 655m \\
+    Average Speed & 4.43 m/s & 5.12 m/s \\
+    Time & 4:12s & 7:03s \\
+    \bottomrule
+    \end{tabular}
+    \captionof{table}{Statistics on the two datasets recorded}
+  \label{tab:geometry}
+\end{table}
+
+\subsubsection{Driving conditions}
+
+'Two loops' was recorded during the middle of the day, with no traffic and very good weather conditions.  It is meant to be the most ideal conditions for the algorithm.  On the other hand car park loops was recorded in the morning when the sun was low in the sky often creating lense flare in both cameras.  This introduces some interference to the algorithms.  The reasoning behind this is to show that not only is the loop closure pipeline robust in non ideal conditions, but also that it can provide significant benefits where visual odometry may fail.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.40\textwidth]{chapters/images/omni_lense_flare}
+    \includegraphics[width=0.59\textwidth]{chapters/images/stereo_lense_flare_bad}
+  \caption{Example of lense flare in 'car park loops' dataset}
+\end{figure}
 
 \subsection{Quantitative evaluation}
 
-ATE is lower yay!
+It is clear from Table \ref{tab:ate_results} that the omni loop closure pipeline clearly outperforms the original ScaViSLAM algorithm in both datasets.  Comparing only the RMSE values, the omni loop closure pipeline provided a 82.4\% and 50.2\% improvement in accuracy on the two loop and car park loop datasets respectively. 
+
+\begin{table}[H]
+  \centering
+    \begin{tabular}{ p{5cm} r r r r} % p{5cm} |}
+    \toprule
+    & \multicolumn{2}{c}{\bf{Two loops}}  & \multicolumn{2}{c}{\bf{Carpark loops}} \\
+    & Stereo & Omni & Stereo & Omni \\
+    \midrule
+    RMSE              & 23.748 & 4.172 & 20.067  &  9.995 \\
+    Standard deviation& 6.374  & 1.899 & 9.591   &  5.768 \\
+    Min Error         & 8.815  & 0.343 & 1.819   &  0.816 \\
+    Max Error         & 34.161 & 8.681 & 55.674  & 51.626 \\
+    \bottomrule
+    \end{tabular}
+    \captionof{table}{Absolute Trajectory Error results.  All units are in meters. Stereo denotes only stereo for loop closures, omni denotes the loop closure pipeline}
+  \label{tab:ate_results}
+\end{table}
+
+Take note of the large maximum error for both systems on the car park loops dataset.  This is likely due to the fact that tracking was lost for a short period of time before ScaViSLAM recovered.  In both cases it is likely that a keyframe at the point before the tracking dropout occured was moved to the location where tracking recovered from graph optimization.  This would account for such a large error value.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1.00\textwidth]{chapters/images/box}
+  \caption{Box plot of results.  Blue denotes the two loops sequence and yellow denotes the car park loops sequence}
+\end{figure}
 
 \subsection{Qualitative evaluation}
 
-Look how much better the graphs are lol!
+Fig. \ref{fig:two_loops_quantitative} illustrates the SLAM graphs for the two loops dataset.  The omni-loop-closures are visible top right between the two loops, and have occurred almost throughout the entire loop.  
 
-\subsection{Performance}
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.49\textwidth]{chapters/images/stereo_above}
+    \includegraphics[width=0.49\textwidth]{chapters/images/omni_above}\\
+    \includegraphics[width=0.49\textwidth]{chapters/images/stereo_side}
+    \includegraphics[width=0.49\textwidth]{chapters/images/omni_side}
+  \caption{SLAM graphs comparison for 'two loops' dataset.  Left shows the original ScaViSLAM system and right is the system with omni-loop-closures}
+  \label{fig:two_loops_quantitative}
+\end{figure}
 
-Min and max running times.  Caching of featuers, min run time important to increase number of tests.
+As expected, there were no large loop closures for the stereo only version, and therefore the drift propagated throughout the entire trajectory.  There was clearly some error in the visual odometry during the three point turn between loops which caused a significantly incorrect heading when starting the second loop, hence why the second loop is so poorly misaligned with the first one.
+
+Inspecting the stereo only system there was is clearly also a significant amount of drift upward with respect to the road that occurred during the entire sequence.  This drift appears to be completely corrected for by the omni-loop-closures.
+
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.49\textwidth]{chapters/images/stereo_above_carpark}
+    \includegraphics[width=0.49\textwidth]{chapters/images/omni_above_carpark}\\
+    \includegraphics[width=0.49\textwidth]{chapters/images/stereo_side_carpark}
+    \includegraphics[width=0.49\textwidth]{chapters/images/omni_side_carpark}
+  \caption{SLAM graphs comparison for 'car park loops' dataset.  Left shows the original ScaViSLAM system and right is the system with omni-loop-closures}
+  \label{fig:carpark_loops_quantitative}
+\end{figure}
+
+Fig. \ref{fig:carpark_loops_quantitative} shows the comparison for the car park loops dataset.  It is clear to see that the omni-loop-closure pipeline resulted in a much more consistent and accurate trajectory.
+
+It is important to point out that tracking was lost in during this sequence for a short period in both systems due to lense flare as the vehicle enters a corner.  This is visible in both SLAM graphs as a long red line separating the two bottom buildings.  Whilst both systems recovered tracking and restored the correct pose via a loop closure, the stereo only system clearly failed to retain a consistent graph.  On the other hand the omni-loop-closure pipeline was able to make an opposite direction loop closure on the section of road preceding the tracking failure and the erroneous edges are simply stretched where keyframes are missing.
+
+Another significant source of error in the stereo only system an unaligned loop for the bottom right building.  Again, this was correctly aligned in the omni-loop-closure case via an opposite direction loop closure.
+
+An important observation from both datasets is that although there are many instances of omni-loop-closures, they did not consistently occur everywhere in overlapping sections of the trajectories.  This would have been expected especially for the two loops dataset, which had ideal conditions for the omni-loop-closure pipeline.  
+
+One potential reason for this is that either the place recognizer did not identify correct matches for certain sections of the sequence.  Most of the sequence looks rather similar; a building on one side of the road and trees on the other, and therefore a lack of distinctive keyframes would cause performance of the place recognizer to degenerate.  Another potential reason is simply not enough circular matches to calculate scale offsets.  Stereo features need to be matched with features used in the omni images for pose estimation.  As the field of view of the stereo camera is limited, it is quite likely that no matches would be found.
+
+\subsection{Performance impact}
+
+This section will briefly discuss the processing time omni-loop-closure pipeline and its impact on ScaViSLAM system.
+%Min and max running times.  Caching of featuers, min run time important to increase number of tests.
