@@ -221,7 +221,7 @@ Table \ref{tab:place_recog_stats} shows the place recognition statistics for 'tw
   \label{tab:place_recog_stats}
 \end{table}
 
-The left image in \ref{fig:place_recog_stats} shows that some of the keyframes have many more edges than others.  This shows that the place recognition module had a bias for certain keyframes.  For most of the route, there is building on one side of the car, and trees on the other.  In addition the two have almost identical facades.  Therefore some parts of the route are likely rather indistinctive and the place recognize is matching similar looking parts of the buildings.
+The left image in \ref{fig:place_recog_stats} shows that some of the keyframes have many more edges than others.  This means that the place recognition module had a bias for certain keyframes.  For most of the route, there is building on one side of the car, and trees on the other.  In addition the two buildings have almost identical facades.  Therefore some parts of the route are rather indistinctive and the place recognize is likely matching similar looking parts of the buildings.
 
 The center image \ref{fig:place_recog_stats} is also of interest.  There are sections of the track where there are no failed loop closures.  This means that these pairs were either not identified as loop closure candidates at all.  It also shows many red links between the two loops.  In this case the loop closures failed due to lack of points used for pose estimation, or there were not enough circular matches to calculate scale offsets.  Stereo features need to be matched with features used in the omni images for pose estimation.  As the field of view of the stereo camera is limited, it is very conceivable that sometimes no matches would exist.
 
