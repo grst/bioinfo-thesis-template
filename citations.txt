@@ -1,0 +1,95 @@
+RANSAC:
+Martin A. Fischler and Robert C. Bolles (June 1981). "Random Sample Consensus: A Paradigm for Model Fitting with Applications to Image Analysis and Automated Cartography". Comm. of the ACM 24 (6): 381–395. doi:10.1145/358669.358692.
+ 
+P3P Pose Estimation (3 Point Algorithm):
+
+@inproceedings{Kneip:2011:NPP:2191740.2191939,
+ author = {Kneip, L. and Scaramuzza, D. and Siegwart, R.},
+ title = {A novel parametrization of the perspective-three-point problem for a direct computation of absolute camera position and orientation},
+ booktitle = {Proceedings of the 2011 IEEE Conference on Computer Vision and Pattern Recognition},
+ series = {CVPR '11},
+ year = {2011},
+ isbn = {978-1-4577-0394-2},
+ pages = {2969--2976},
+ numpages = {8},
+ url = {http://dx.doi.org/10.1109/CVPR.2011.5995464},
+ doi = {10.1109/CVPR.2011.5995464},
+ acmid = {2191939},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
+ keywords = {nonlinear optimization, perspective-three-point problem, direct computation, camera position, 2D-3D point, camera reference frame, P3P problem, parametrized camera pose, computational efficiency, RANSAC-outlier rejection step},
+}
+ 
+5 point algorithm:
+@article{Nister:2004:ESF:987526.987623,
+author = {Nist{\'e}r, David},
+title = {An Efficient Solution to the Five-Point Relative Pose Problem},
+journal = {IEEE Trans. Pattern Anal. Mach. Intell.},
+issue_date = {June 2004},
+volume = {26},
+number = {6},
+month = jun,
+year = {2004},
+issn = {0162-8828},
+pages = {756--777},
+numpages = {22},
+url = {http://dx.doi.org/10.1109/TPAMI.2004.17},
+doi = {10.1109/TPAMI.2004.17},
+acmid = {987623},
+publisher = {IEEE Computer Society},
+address = {Washington, DC, USA},
+keywords = {Imaging geometry, Imaging geometry, motion, relative orientation, structure from motion, camera calibration, ego-motion estimation, scene reconstruction., camera calibration, ego-motion estimation, motion, relative orientation, scene reconstruction., structure from motion},
+} 
+ 
+2-view Triangulation of new Landmarks:
+@INPROCEEDINGS{5539785, 
+author={Lindstrom, P.}, 
+booktitle={Computer Vision and Pattern Recognition (CVPR), 2010 IEEE Conference on}, 
+title={Triangulation made easy}, 
+year={2010}, 
+pages={1554-1561}, 
+keywords={computational geometry;computer vision;iterative methods;polynomials;3D points triangulation;L2 reprojection error;iterative algorithm;machine precision;matrix vector operations;optimal solution;polynomial method;quadratic equation;triangulation made easy;Cameras;Computer vision;Constraint optimization;Design methodology;Equations;Error correction;Iterative algorithms;Laboratories;Numerical stability;Polynomials}, 
+doi={10.1109/CVPR.2010.5539785}, 
+ISSN={1063-6919},}
+https://e-reports-ext.llnl.gov/pdf/384387.pdf
+
+Robust mean:
+Jonsson E, Felsberg M.:Efficient Mean Value Calculation of 1D Features, e-paper, Linkoping University, The Institute of Technology (2005)
+
+7Dof Horn:
+@ARTICLE{Horn87closed-formsolution,
+    author = {Berthold K. P. Horn},
+    title = {Closed-form solution of absolute orientation using unit quaternions},
+    journal = {Journal of the Optical Society of America A},
+    year = {1987},
+    volume = {4},
+    number = {4},
+    pages = {629--642}
+
+Scaramuzza Camera Model:
+Scaramuzza, D., Martinelli, A. & Siegwart, R. (2006). A Toolbox for Easy calibrating
+Omnidirectional Cameras. Proceedings of the IEEE International Conference on
+Intelligent Robots and Systems, pp. 5695-5701, China, October 2006, Beijing.
+ 
+Scaramuzza, D., Martinelli, A. & Siegwart, R. (2006). A Flexible Technique for Accurate
+Omnidirectional Camera Calibration and Structure from Motion, Proceedings of
+IEEE International Conference on Computer Vision Systems, USA, January 2006, New
+York.
+
+Unwrapping:
+--------------------------------------
+Hi Niko,
+
+Fuer die Rektifizierung gibt es leider keine richtige Literatur. Wir haben zwei verschiedene Rektifizierungsansaetze implementiert:
+
+1. Cylindrical Projection
+z.B. http://mathworld.wolfram.com/CylindricalProjection.html, es ist natuerlich klar, dass die Bildbereiche oben und unter gestreckt werden --> sehr schlecht fuer Feature Matching!
+
+2. Spherical Projection
+z.B. http://mathworld.wolfram.com/EquirectangularProjection.html, hier bleiben Groessenverhaeltnisse im Donut und im rektifiziertem Bild gleich, da auf einen “Sphere” projiziert wird und nicht auf einen Cylinder. Der Pixel Abstand (= Winkel zwischen Bildstrahlen) zwischen zwei festen Punkten (z.B. Feature / Landmarken) im Bild, bleibt also immer konstant egal wo sich diese beiden Punkte im Bild befinden.
+
+Wir nutzen eigentlich immer die spherical rectification, da die deutlich besser fuer stabiles feature matching geeignet ist. Ich hoffe, damit kommst du erstmal ein bisschen weiter?
+
+Beste Gruesse & trotz allem Schreibstress auch das Schlafen nicht vergessen ;-)
+Matthias
+
