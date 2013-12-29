@@ -55,7 +55,7 @@ A fairly straight forward approach would be to use a SLAM algorithm designed for
 
 A potential improvement to stereo tracking would be to initialize landmarks with stereo and continue to track them as they go out of the stereo camera's field of view with the omni camera.  The p3p algorithm could be used with 3D-2D correspondences to calculate a pose.  Alternatively these points could be considered in the RANSAC pose estimation step by calculating reprojection error for a given pose and then either counting them as inliers or outliers.
 
-\subsubsection{Omni-camera for loop closure (fuck yeah!)}
+\subsubsection{Omni-camera for loop closure}
 
 The idea here is to use the omni camera to find global loop closures where the stereo camera normally wouldn't.  The omni directional can match frames regardless of rotation about the upward facing axis, due to the 360$^{\circ}$ view.  (fig \ref{fig:omni_loop_close}) This means that for robots driving on a ground plane, it could recognize and even match frames regardless of the robots orientation.
 
