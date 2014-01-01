@@ -2,7 +2,7 @@
 \chapter{Related Work}
 \label{chapter:Related_Work}
 
-%\begin{figure}[h!]
+%\begin{figure}[h]
   %\centering
     %\includegraphics[width=0.8\textwidth]{chapters/images/gull}
   %\caption{A picture of a gull.}
@@ -43,17 +43,17 @@ Take note the principle point is often not in the sensor of the image, and there
 %http://www.jordicenzano.name/projects/2D-to-3D-Paradigm-overview/camera-model
 %use this for picture motivation
 
-\begin{figure}[h!]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.5\textwidth]{chapters/images/cam_model_fig2}
   \caption{Pinhole camera model}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[h]
   \centering
-    \includegraphics[width=0.9\textwidth]{chapters/images/cam_model_fig41} \\
-    \includegraphics[width=0.3\textwidth]{chapters/images/cam_model_fig42} \\
-    \includegraphics[width=0.9\textwidth]{chapters/images/cam_model_fig43} 
+    \includegraphics[width=0.8\textwidth]{chapters/images/cam_model_fig41} \\
+    \includegraphics[width=0.2\textwidth]{chapters/images/cam_model_fig42} \\
+    \includegraphics[width=0.8\textwidth]{chapters/images/cam_model_fig43} 
   \caption{Pinhole camera model with image plane shown inverted in front of the focal point}
 \end{figure}
 
@@ -65,7 +65,7 @@ Take note the principle point is often not in the sensor of the image, and there
 
 The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is used to focus more light rays onto the sensor and allowing a sharper image.  Such as setup can be seen in fig. xyz.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  Lense distortion causes lines to be curved, as in fig x.  It is also possible during the intrinsic calibration to simultaneously determine distortion coefficients which allow the image to be reshaped such that all straight lines appear straight.
 
-\begin{figure}[h!]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.49\textwidth]{chapters/images/distorted}
     \includegraphics[width=0.49\textwidth]{chapters/images/undistorted}
@@ -98,10 +98,13 @@ compensated for}
 
 \subsection{Omni-directional Camera}
 
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.15\textwidth]{chapters/images/omni_coord_sys}
+  \caption{Omni camera coordinate frame}
+  \label{fig:omni_coord_sys}
+\end{figure}
 % ask matthias for literature
-
-\subsection{Flir}
-Leave this to last.  Flir will (probably) get left out
 
 \section{Computer Vision Basics}
 
@@ -165,7 +168,7 @@ traditional approach for SLAM can be split into 4 steps.
 %TODO: cite kalman filter
 Feature extraction involves finding unique features within the sensor data that can be later reidentified in future sensor readings.  These features denote individual observations of a landmark through the eyes of a sensor.  A landmark can be thought of as a real world object which can be observed by a sensor.  Data association is the process of matching multiple observations of a single landmark over multiple sensor readings, in essence tracking the landmarks.  Take for example a robot doing 2D indoor SLAM with a 2D laser scanner.  A simple feature would be corners detected in the laser data.  These are observations of real world corners between walls, or any object within range of the laser scanner that would cause a sharp angle to be observed.  These real corners or objects can be thought of as landmarks.
 
-\begin{figure}[h!]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.8\textwidth]{chapters/images/2D_SLAM}
   \caption{Simple generic SLAM representation }
@@ -183,7 +186,7 @@ The feature extraction in Visual SLAM involves using image feature detectors/ de
 
 The data association stage is performed by doing feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of monocular SLAM (2D-2D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transform between frames. The error is calculated by projecting landmarks from one frame to the next by applying the transformation to each of them. The error is then the sum of the distances between points of one frame, and the corresponding points transformed to that same frame. \ref{eq:ransac_error}
 
-\begin{figure}
+\begin{figure}[h]
  \centering
  \begin{math}
   e = \sum\limits_{\bv p_i} \bv p^a_i - ^a\bv T_b \cdot \bv p^b_i
@@ -207,7 +210,7 @@ The intent is to have a fast localization thread that runs in realtime providing
 
 A common problem with visual SLAM systems is that the pose estimation between frames is not perfectly accurate.  While locally this is not a problem, if the camera is to move a long distance this error will accumulate, as the current pose is a product of all the previous frame to frame transformations.  This effect can easily be demonstrated by performing a long trajectory and returning to the start point.  Whilst the camera is in its original position, the estimated pose will be some offset from the origin.
 
-\begin{figure}[h!]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.5\textwidth]{chapters/images/loop-closure}
   \caption{Loop Closure}

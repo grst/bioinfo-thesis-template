@@ -3,30 +3,89 @@
 
 \section{Place Recognition}
 
-The first step is to substitute omni camera images in the place recognition module. The donut image format is not preferred for the place recognition.  They contains blind spots (inner and outer circle), which contain some texture, and are also susceptible to change from internal reflections within the lense.  In terms of place recognition, this would add noise to each image and therefore the unwrapped image is preferred.
+The first step is to substitute omni camera images in the place recognition module. The donut image format is not preferred for the place recognition.  It has blind spots (inner and outer circle), which contain some texture, and are also susceptible to change from internal reflections within the lense.  In terms of place recognition, this would add noise to each image and therefore the unwrapped image is preferred.
 
-It is computational expensive to unwrap every frame, this would mean processing 1280x960 images at 30Hz.  This would also introduce complications in synchronizing stereo frames with omni frames.  Therefore only keyframe images are unwrapped.  A omni camera image buffer records a short history of donut image frames.  When a new keyframe is created, the timestamp of the stereo image used for this keyframe is sent to the buffer object, which finds the corresponding omni camera image and unwraps it.  This unwrapped image is saved with the keyframe and sent to the place recognition module.  This reduces computational cost and simplifies omni-stereo synchronization.
+Therefore unwrapped circular images are used for place recognition.  The exact details of unwrapping and associating omni camera frames with stereo frames is discussed in Section \ref{sec:video_input}.
 
-As described in section \ref{sec:bag_of_words}, the place recognition system employs clustering of detected SURF features in feature space using a bag of words approach.  This means that in the case of $360^\circ$ circular images, it will be invariant to rotation about the upward facing axis, as the locations of 2D features are not considered.  This is ideal for this particular use case.
+As described in section \ref{sec:bag_of_words}, the place recognition system employs clustering of detected SURF features in feature space using a bag of words approach.  This means that in the case of $360^\circ$ circular images, the bag of words representation will be invariant to rotations about the omni camera frame z axis (Fig \ref{fig:omni_coord_sys}), as the locations of 2D features are not considered.  This is ideal for this particular use case.
 
-\section{Calculating transformations for loop closures}
+\section{Loop closures}
 \label{sec:calc_loop_edge}
 
 A match from the place recognition module itself is not enough to do a global loop closure.  As described in section \ref{sec:scavislam_place_recog}, a geometry check is required to filter false positive matches and determine a metric rigid body transformation so the loop closure may be added to the graph.
 
-It has also been mentioned in section \ref{subsec:selected_approach} that calculating a transformation using a monocular camera such as the omni camera introduces the arbitrary scale issue.  (For further explanation of the scale issue, see Chapter \ref{chapter:MultiCamSLAM}). Therefore the stereo information needs to be combined with the omni camera in order to produce a metric scale transformation.  Two methods were developed to address this scale issue, a 'scale correction' algorithm, and using the p3p algorithm.  These methods will be discussed in detail in the following sections.
+It has also been mentioned in section \ref{subsec:selected_approach} that calculating a transformation using a monocular camera such as the omni camera introduces the arbitrary scale issue.  (For further explanation of the scale issue, see Chapter \ref{chapter:MultiCamSLAM}). Therefore the stereo data needs to be associated with the omni camera data in order to produce a metric scale transformation.  Two methods were developed and compared to address this scale issue.  The first approach uses the p3p algorithm and is a fairly straightforward algorthm.  The second 'scale correction' algorithm is a more sophisticated approach.  These methods will be discussed in detail and compared in the following sections. 
+
+\subsection{Circular Matching}
+
+%TODO circular matching citation
+%TODO siftgpu citation
+
+For both approaches, there is a data association stage between omni camera images and stereo images.  Features were extracted from stereo images and the unwrapped spherical image using SIFTGPU.  Matching is then performed, also using SIFTGPU between left and right, left and omni and right and omni.  These three match lists are filtered for robust matches using circular matching. 
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.5\textwidth]{chapters/images/stereo_circular_matching}\\
+  \caption{Circular matching for two pairs of stereo frames at $t_0$ and $t_1$. A feature must match across all frames to be accepted}
+  \label{fig:stereo_circular_matching}
+\end{figure}
+
+Fig. \ref{fig:stereo_circular_matching} shows an example of stereo matching applied to two stereo image pairs.  The idea behind circular matching is to create a chain of matches across multiple frames, whereby the chain forms a closed loop of matches. 
+
+The basic algorithm for circular matching is as follows:  
+\begin{itemize} \itemsep1pt  \parskip0pt \parsep0pt
+ \item Take a feature in the first frame.  
+ \item Lookup its match in the next frame.  
+ \item Take this match and look up its match in the next frame.  
+ \item Continue for all frames
+ \item Check if the last feature also has a match with the feature from the first frame.  
+ \subitem If so then accept the match.
+\end{itemize}
+
+Circular matching is very efficient, as it only involves iteration of match lists and lookups of matches.  It provides much more robust matching, which means that the SIFT match threshold may be relaxed, allowing the possibility for more correct matches. An example of circular matching can be found in Fig. \ref{fig:circular_match} 
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/circular_match}\\
+  \caption{Results of circular matching between left, right and omni frames. Left is one of the stereo images and right is a cropped part of the unwrapped omni image. The circular matching produces robust matches without having strict SIFT matching thresholds}
+  \label{fig:circular_match}
+\end{figure}
+
+\subsection{p3p Algorithm}
+
+%As opposed to the two step approach described above, this implementation calculates a metric transformation using stereo and omni camera data in one step.
+
+The p3p algorithm (cite, section \ref{subsec:p3p}) calculates a transformation between frames given a set of 2D to 3D correspondences.  The scale of the transformation is propagated from the 3D points.  This means after triangulating the new 2D points with the transformation obtained, they will be to the same scale as the existing map.
+
+The pipeline implemented using the p3p algorithm is as follows:
+
+\begin{enumerate}
+\itemsep0em
+ \item Perform circular matching between left/right images from one keyframe, and omni image from the other keyframe
+ \item Triangulate 3D points in metric scale using left/right stereo circular matches
+ \item Use p3p algorithm; correspondences are known between 3D stereo points and 2D omni points
+\end{enumerate}
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/6_images_p3p}\\
+  \caption{Outline of the p3p based pipeline}
+  \label{fig:p3p_flowchart}
+\end{figure}
+
+This is also illustrated in Fig. \ref{fig:p3p_flowchart}.  This will directly calculate a pose between the two keyframes to the correct scale.  It can also be run twice, matching stereo and omni in both directions, returning two transformations. In terms of implementation this is a straightforward solution, and would be preferred.  
 
 \subsection{Scale Correction algorithm}
 
-The main idea behind this algorithm is a two stage approach, first calculate the non-metric transformation using images from the omni camera and then correct it to metric scale using stereo data.  An important consideration is that the omni camera will find loop closures where stereo wouldn't, so one must assume that there will be likely zero overlap between stereo poses, and therefore no feature matching possible between these two frames. (see fig \ref{fig:omni_loop_close})
+This algorithm is a two stage approach, first calculate the non-metric transformation using images from the omni camera and then correct it to metric scale using stereo data.  An important consideration is that the omni camera will find loop closures where stereo wouldn't, so one must assume that there will be likely zero overlap between stereo poses, and therefore no feature matching possible between these two frames. Fig. \ref{fig:omni_loop_close}
 
 \subsubsection{Pose estimation}
 
-First step is to calculate a non metric transformation using the two omni frames only.  This is done using the 5 point algorithm as mentioned in section \ref{subsec:5point}.  This returns a non metric pose and a set of inlier points used to calculate this pose, represented as 3D vectors (also non metric scale).
+First step is to calculate a non metric transformation using the two omni frames only.  This is done using the 5 point algorithm as mentioned in Section \ref{subsec:5point} paired with RANSAC and evaluating euclidean distance as the error function.  This step could have been improved by adding a non linear refinement step calculating a refined pose based on all inlier points.  The algorithm returns a non metric pose and a set of inlier points, represented as 3D vectors (also non metric scale).
 
 \subsubsection{Scale Offset Calculation}
 
-Points with metric scale are calculated using stereo matching.  These points are then matched to feature points from the omni camera images and compared with 3D non metric points returned from the pose estimation.  A scale offset is calculated per point.  (fig.\ref{fig:scale_offset}) The pipeline that calculates a list of scale offsets is listed below, and represented in fig \ref{fig:scale_adjust_flowchart}.  This pipeline takes left, right and omni images as an input, and may be applied to either of the two loop closure frames separately.  In practice both frames are used and the scale list are concatenated together.
+Points with metric scale are calculated using matches between left and right stereo frames.  These points are then matched to feature points from the omni camera images and compared with 3D non metric points returned from the pose estimation.  A scale offset is calculated per point as per Fig. \ref{fig:scale_offset}.  The pipeline that calculates a list of scale offsets is listed below, and represented in Fig. \ref{fig:scale_adjust_flowchart}.  This pipeline takes left, right and omni images as an input, and may be applied to either of the two loop closure frames separately.  In practice both frames are used and the scale list are concatenated together.
 
 \begin{figure}[h]
   \centering
@@ -57,24 +116,16 @@ Points with metric scale are calculated using stereo matching.  These points are
  \end{enumerate}
 \end{enumerate} 
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \includegraphics[width=1.0\textwidth]{chapters/images/6_images_scale_adjust}\\
   \caption{Outline of the scale adjustment pipeline}
   \label{fig:scale_adjust_flowchart}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-    \includegraphics[width=0.8\textwidth]{chapters/images/circular_match}\\
-  \caption{Results of circular matching between left, right and omni frames. Left is one of the stereo images and right is a cropped part of the unwrapped omni image. The circular matching produces robust matches without having strict SIFT matching thresholds}
-  \label{fig:circular_match}
-\end{figure}
-
-
 \subsubsection{Robust scale estimation}
 
-Having determined a number of scale offsets, a single offset needs to be determined.  It is likely that outliers exist in the data and these need to be considered.  In addition to outliers, it is also important to consider the metric accuracy of each stereo point.  As points occur further away from the camera, the corresponding disparity decreases.  For low values of disparity, the resolution in depth decreases quadratically, and therefore the accuracy of scale estimation from this point diminishes. Fig. \ref{fig:scale_bar_graph} illustrates the relationship between scale offset accuracy and associated depth values.
+Having determined a number of scale offsets, a single offset needs to be determined.  It is likely that outliers exist in the data and these need to be taken into consideration.  In addition to outliers, it is also important to consider the metric accuracy of each stereo point.  As points occur further away from the camera, the corresponding disparity decreases.  For low values of disparity, the resolution in depth decreases quadratically, and therefore the accuracy of scale estimation from this point diminishes. Fig. \ref{fig:scale_bar_graph} illustrates the relationship between scale offset accuracy and associated depth values.
 \begin{figure}[h]
   \centering
     \includegraphics[width=1.0\textwidth]{chapters/images/distance_vs_scale_error}\\
@@ -103,55 +154,33 @@ $s_i$ denotes a single scale offset, and $z_i$ is the corresponding depth value 
 
 %TODO robust mean citation
 
-%\begin{figure}[H]
+%\begin{figure}[h]
   %\centering
     %\includegraphics[width=0.6\textwidth]{chapters/images/scale_matches}\\
   %\caption{Visualization of non metric points and their corresponding metric scale matches}
   %\label{fig:circular_match}
 %\end{figure}
 
-\subsection{p3p Implementation}
+\subsection{Comparison of approaches}
 
-As opposed to the two step approach described above, this implementation calculates a metric transformation using stereo and omni camera data in one step.
+A number of loop closure examples were evaluated with both the scale correction and p3p approaches, and compared against a ground truth generated by GPS.  Fig. \ref{fig:scale_vs_p3p} shows such an example.  Although both algorithms returned accurate rotations, it is clear that the translation is significantly incorrect for the p3p implementation.
 
-The p3p algorithm (cite, section \ref{subsec:p3p}) calculates a transformation between frames given a set of 2D to 3D correspondences.  The scale of the transformation is propagated from the 3D points.  This means after triangulating the new 2D points with the transformation obtained, they will be to the same scale as the existing map.
+The number of circular matches between the stereo camera and the omni camera of the other keyframe is typically very low.  Not only is matching occuring between different cameras, resulting in differing scale and intensities of feature patches, but there is also a larger translation between cameras. Whilst in the scale correction algorithm, these matches are only used for scale adjustment, in the p3p pipeline they are used for pose estimation.  Scale adjustment only requires 1 correspondence, however pose estimation requires 3.  There are likely to be outliers and therefore desirably a multiple of the minimal number of correspondences is required to determine a good pose.  Therefore the scale correction algorithm should perform better with a limited number of circular matches.
 
-In this case this algorithm could be used the following way:
+The scale adjustment algorithm uses all the matches between two omni poses to calculate a transformation.  In practice this was found to to be typically well over 100 inliers for pose estimation.  Therefore this results in a highly accurate transformation.  On the other hand the p3p algorithm only uses the circular matches, which are often as little as 20 matches.  In addition, the rotation part of the transformation calculated by the 5-point algorithm does not need to be scaled, and is unaffected by any inaccuracy in the scale correction part.
 
-\begin{enumerate}
-\itemsep0em
- \item Perform circular matching between left/right images from one keyframe, and omni image from the other keyframe
- \item Triangulate 3D points in metric scale using left/right stereo circular matches
- \item Use p3p algorithm; correspondences are known between 3D stereo points and 2D omni points
-\end{enumerate}
-
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
-    \includegraphics[width=1.0\textwidth]{chapters/images/6_images_p3p}\\
-  \caption{Outline of the p3p based pipeline}
-  \label{fig:p3p_flowchart}
-\end{figure}
-
-This will directly calculate a pose between the two keyframes to the correct scale.  It can also be run twice, matching stereo and omni in both directions. In terms of implementation this is a much neater solution, and would be preferred.  However there are a few pitfalls why it was not chosen as the solution to evaluate on.
-
-\subsection{Comparing methods}
-
-A number of loop closure examples were evaluated with both the scale correction and p3p approaches, and compared against a ground truth generated by GPS.  Fig. \ref{fig:scale_vs_p3p} shows such an example.  
-
-In practice the p3p turns out to be not as accurate as the scale adjustment algorithm.  The number of matches between the stereo camera and the omni camera of the other keyframe is typically very low.  Not only is matching occuring between different cameras, resulting in differing scale and intensities of feature patches, but there is also a larger translation between cameras. Whilst in the scale correction algorithm, these matches are only used for scale adjustment, in the p3p pipeline they are used for pose estimation.  Scale adjustment only requires 1 correspondence, however pose estimation requires 3.  There are likely to be outliers and therefore desirably a multiple of the minimal number of correspondences is needed to determine a good pose.
-
-The scale adjustment algorithm uses all the matches between two omni poses to calculate a transform.  In later evaluations this is shown to be typically well over 100 inliers for pose estimation.  This results in a highly accurate transformation.  The rotation part of the transform does not need to be scaled and can be used directly.  As stated above, only one point is required to determine the scale offset so scale adjustment should be accurate even with few matches.
-
-\begin{figure}[H]
-  \centering
-    \includegraphics[width=1.0\textwidth]{chapters/images/scale_vs_p3p_1}\\
+    \includegraphics[width=0.9\textwidth]{chapters/images/scale_vs_p3p_1}\\
   \caption{An example comparing pose estimation from p3p and scale adjustment algorithms}
   \label{fig:scale_vs_p3p}
 \end{figure}
 
-%TODO: change ground_truth to GPS
+%TODO: change pic to black on white
 
-Finally another advantage of the scale adjustment algorithm is the way in which the data from both frames is fused.  For both algorithms, they can be run twice using first one keyframe, and then the other. (see fig. \ref{fig:scale_adjust_flowchart} and fig. \ref{fig:p3p_flowchart})  Whilst the scale adjustment algorithm outputs two offset vectors that can easily be combined to determine a single robust offset value, the p3p implementation generates two separate poses that need to be fused together somehow.  They could be averaged or both added to the graph weighted on the number of inliers. Nevertheless incorporating all available data into calculating one transform should achieve better results than calculating two not as accurate poses and averaging them together.
+Finally another advantage of the scale adjustment algorithm is the way in which the data from both frames is fused.  For both algorithms, they can be run twice using first one keyframe, and then the other. (See Fig. \ref{fig:p3p_flowchart} and Fig. \ref{fig:scale_adjust_flowchart})   Whilst the scale adjustment algorithm outputs two offset vectors that can easily be combined to determine a single robust offset value, the p3p implementation generates two separate poses that need to be fused together somehow.  They could be averaged or both added to the graph weighted on the number of inliers. Nevertheless incorporating all available data into calculating one transform should achieve better results than calculating two not as accurate poses and averaging them together.
+
+Given this comparison, the scale correction algorithm was selected for use in the omni-loop-closure pipeline to be evaluated.
 
 \begin{figure}[H]
   \centering
@@ -177,7 +206,7 @@ Given that no data association will be done between multiple loop closures, ther
 
 The place recognition module will return potential loop closures for the most recently added keyframe.  If a loop closure is successful, this means it will connect to a keyframe in the inner window.  However adding a single edge to the inner window will have little affect, as there will be too many landmark observation constraints opposing this edge.  Typically what happens is that the particular keyframe will be pulled in the direction of the loop closure, but all the other keyframes will remain in place. (fig. \ref{fig:graph_fail})
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.49\textwidth]{chapters/images/before_opt}
     \includegraphics[width=0.49\textwidth]{chapters/images/after_opt}
@@ -187,7 +216,7 @@ The place recognition module will return potential loop closures for the most re
 
 In order to deal with this problem, after adding a loop closure edge, the graph is 'reinitialised' to a new configuration using SE(3) edge only optimization.  The entire inner window is marginalised to SE(3) edges, as they would be when leaving the inner window.  This is essentially the same as changing the inner window size to 1.  Then optimization is performed, this time with the loop closure edge having a more equal weighting to the rest of the constraints.  The graph error is then spread evenly throughout the graph, and the current pose is moved to the loop closure keyframe.  Having completed this optimization, the inner window is restored and the graph retains its structure.
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.45\textwidth]{chapters/images/before_opt_good}
     \includegraphics[width=0.45\textwidth]{chapters/images/after_opt_good}
