@@ -19,11 +19,76 @@ Brief description of SE(3) and SO(3)
 A Lie group $G$ is a set of elements that must satisfy a number of axioms, mainly; the group must be closed under its binary operation, it must be associative, it must have a unique identity element and each element must have a unique inverse.  A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.
 %link to copy formulas:
 %https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&ved=0CC4QFjAA&url=http%3A%2F%2Fwww.ai.sri.com%2F~agrawal%2Ficcv05.pdf&ei=tzWQUrW_JYqjrgGgyoHgBQ&usg=AFQjCNEf5gEIFxkeoWnymDixktsxuHRilQ&sig2=94gwoKQvghQEIh_nLeAZ8A&bvm=bv.56988011,d.aWM
-$SO(3)$
 
-$SE(3)$
+In this work, the special euclidean groups $SO(3)$ and $SE(3)$ are used to represent rotations and rigid body transformations respectiveley.  They are defined as follows:
 
-provide explanation, mappings
+\begin{align}
+  SO(3) = \{ R \mid R \in GL(3), RR^T = I, \det(R) = 1 \} \\
+  SE(3) =  \left\{ \left( 
+             \begin{array}{cc}
+             R & t \\
+             0 & 1 \end{array} \right) 
+  \in GL(4) \mid R\in SO(3), t \in \mathbb R^3
+\right\}
+\end{align}
+The logarithmic map $SO(3) \to \mathfrak{so}{3}$ is given by
+\begin{align}
+ \log(R) = \dfrac{\phi}{2\sin(\phi)}(R-R^T) = \hat\omega
+\end{align}
+Where $\phi$ satisfies
+\begin{align}
+ Tr(R) = 1 + 2\cos(\phi), |\phi| < \pi
+\end{align}
+and $\hat\omega$ is the skew symmetric matrix form of the rotation vector $\omega = (\omega_x, \omega_y, \omega_z)$
+\begin{align}
+ \hat\omega = \left( \begin{array}{ccc}
+                      0         & -\omega_z &  \omega_y \\
+                      \omega_z  & 0         & -\omega_x \\
+                      -\omega_y & \omega_x  & 0
+                     \end{array} \right)
+\end{align}
+The exponential map $\mathfrak{so}(3) \to SO(3)$ is given by
+\begin{align}
+ \exp(\hat\omega) = I + \dfrac{\sin\|\omega\|}{\|\omega\|}\hat\omega + 
+                  \dfrac{1 - \cos\|\omega\|}{\|\omega\|^2}\hat\omega^2
+\end{align}
+The logarithmic map $SE(3) \to \mathfrak{se}{3}$ is given by
+\begin{align}
+  \log\left( \begin{array}{cc}
+              R & t \\
+              0 & 1 
+             \end{array} \right)
+ =
+ \left( \begin{array}{cc}
+         \log(R) & A^{-1}t \\
+         0 & 0  
+        \end{array} \right)
+\end{align}
+where
+\begin{align}
+ A^{-1} = I - \dfrac{1}{2}\hat\omega 
+          + \dfrac{2\sin\|\omega\| - \|\omega\|(1+\cos\|\omega\|)}
+                  {2\|\omega\|^2\sin\|\omega\|}\hat\omega^2
+\end{align}
+The exponential map $\mathfrak{se}(3) \to SE(3)$ is given by
+\begin{align}
+ \exp\left(\begin{array}{cc}
+             \hat\omega & u \\
+             0 & 0  
+           \end{array} \right) 
+=
+  \left(\begin{array}{cc}
+          \exp(\hat\omega) & Au \\
+          0 & 1 
+        \end{array} \right)
+\end{align}
+where
+\begin{align}
+ A = I + \dfrac{1 - \cos\|w\|}{\|\omega\|^2}\hat\omega 
+          + \dfrac{\|\omega\| - \sin\|\omega\|}
+                  {\|\omega\|^3}\hat\omega^2
+\end{align}
+Note that $\hat\omega$ and $u$ may both be represented by three numbers.  Therefore the exponential map allows a minimal representation of rotation and transformations in terms of parameterization.  This will be utilized later (Sections \ref{sec:oplus}, \ref{sec:error_function}).
 
 \section{Camera Models}
 
@@ -286,6 +351,7 @@ Where $c_k = \bv e_k^T \bv \Omega_k \bv e_k$, $\bv b_k = \bv e_k^T \bv \Omega_k 
 $\bv H$ is a very large sparse square matrix.  It is mostly zeros; it only contains non zero values where there is a constraint connecting blocks.  This matrix can be efficiently solved by taking advantage of the fact that is is sparse, for instance, by Cholesky factorization.
 
 \subsection{Operator to apply increments in optimization}
+\label{sec:oplus}
 %TODO: oplus fill in 
 As part of the SLAM problem, it is common to have parameterization in non Euclidean space.  For instance, a 3 dimensional pose $SE(3)$ is described by a translational part $\mathbb{R}^3$, which is clearly Euclidean, and a rotational component $SO(3)$ which is not euclidean.  The rotation part is often described in some over parameterized way, for instance quaternions or rotational matrices.  
 
@@ -298,7 +364,7 @@ A better idea is to consider the problem space as a manifold.  A manifold is a s
 The Lie algebra provides a compact representation of the element, and therefore we can use the exponential map $\exp\colon \mathfrak g \to G$ for the $\boxplus$ operator.  For a further explanation of Lie groups and the logarithmic map, please see \ref{sec:lie_group}
 
 \subsection{Error functions}
-
+\label{sec:error_function}
 The error function $\bv e_k(\bv x_k, \bv z_k)$ measures how well the vertices fit the the edge that they are connected to.  A similar problem is encountered as for vertex increments when calculating error for the case of non euclidean parameterization.  Again for the example of the $SE(3)$ pose, in this case the error, which could be described as an $SE(3)$ pose, needs to be converted to some minimal vector form for the optimizer.  In this case the  logarithmic mapping $\log\colon G \to \mathfrak g$ can be used to achieve this conversion. More details see \ref{sec:lie_group}
 
 %\subsubsection{Robust least squares}
