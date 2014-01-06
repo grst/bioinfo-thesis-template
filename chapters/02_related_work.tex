@@ -265,6 +265,12 @@ Bundle adjustment over all landmarks and camera poses is commonly achieved with 
 
 \subsection{Keyframe SLAM}
 
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.7\textwidth]{chapters/images/keyframes}
+  \caption{Keyframe SLAM.  The large bold coordinate systems represent keyframes whilst the smaller ones denote intermediate frames}
+\end{figure}
+
 The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera with respect to that keyframe.  If the camera moves or rotates a significant distance away from the active keyframe, a new keyframe will be created with a known transformation to the previous keyframe.
 
 The intent is to have a fast localization thread that runs in realtime providing an accurate pose estimation with respect to the keyframe.  The mapping thread that deals with the keyframe runs at a much lower framerate, and handles changing the keyframe, global optimization(?), something else. The overall outcome is a system that provides an accurate pose in global coordinates with a fast update rate, as well as a globally consistent map.
