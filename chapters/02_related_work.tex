@@ -10,18 +10,62 @@
 
 \section{3D geometry}
 
-Yes  - do coordinate systems, transformations, notation
-Brief description of SE(3) and SO(3)
+%Yes  - do coordinate systems, transformations, notation
+%Brief description of SE(3) and SO(3)
+Throughout this work the notion of rigid body transformations and coordinate frames will be used to describe relative motion of bodies.  A rigid body is a solid body where deformation is neglected.  A rigid body transformation is a transformation of some vector space which preserves distances between every pair of points, thus preserving the solid body assumption of rigid bodies. In this work rigid body transformations of 3 dimensional space $\mathbb{R}^3$ will be considered.
+
+A transformation can be described by a rotation followed by a translation.  For $\mathbb{R}^3$ space, there are 3 axes of rotation and 3 axes of translation, and therefore a transformation has 6 degrees of freedom.  These transformations, also known as  'poses', may be described by the special euclidean group $SE(3)$.  Special euclidean groups and Lie Algebra will be covered in \ref{sec:lie_group}.
+
+There are multiple ways to parameterize a rigid body transformation, as different representations for rotations exist.  A common representation is to add a forth homogeneous coordinate and use a 4x4 matrix as follows:
+\begin{align}
+    \left( 
+             \begin{array}{ccc|c}
+               &        &   & t_x \\
+               & \bv{R} &   & t_y \\
+               &        &   & t_z \\ \hline
+             0 & 0      & 0 & 1 \end{array} \right) 
+\end{align}
+R is a 3x3 rotation matrix and $t$ is a 3x1 translation vector.  The forth coordinate can be thought of as the scale, however in this work it will always be set to unity.  This representation means 12 parameters for one rigid body transform, which is very much overparameterization, however this representation allows easier transform composition as when using multiple coordinate systems.
+
+Multiple coordinate systems are used to represent 3D data in different reference frames.  A reference frame is exactly the same as a coordinate system, it can be imagined as being rigidly attached to a solid body.
+
+\begin{figure}[h]
+  \centering
+      \includegraphics[width=0.5\textwidth]{chapters/images/coord_sys}
+  \caption{Coordinate frames. Point $\bv{P}$ may be represented in the coordinate frame  $W$ (fixed world frame) as $\bv{P}_W$ or in the coordinate frame $A$ as $\bv{P}_A$}
+  \label{fig:coord_sys}
+\end{figure}
+
+\begin{align}
+ \bv{P}_W = ^W\bv{T}_A \cdot \bv{P}_A
+ \label{eq:a_to_w}
+\end{align}
+
+Equation \ref{eq:a_to_w} shows how to transform a point into a different reference frame.  This can be read intuitively as follows; $^W\bv{T}_A$ transforms a point from coordinate frame $A$ being multiplied from the right to coordinate frame $W$.  This same transformation is visualized in Fig. \ref{fig:coord_sys}.  $\bv{T}$ represents a 6 degree of freedom (DoF) rigid body transform, and $\bv{P}$ is a 3 dimensional vector representing a world point. \\
+Transformations may be inverted; where 
+\begin{align}
+ (^W\bv{T}_A)^{-1} = ^A\bv{T}_W
+\end{align}
+They may also be composed as follows; 
+\begin{align}
+ ^A\bv{T}_C = ^A\bv{T}_B \cdot ^B\bv{T}_C
+\end{align}
+Composition is associative but not commutive.  The selected notation helps to disambiguate multiplication order.  As $^A\bv{T}_B$ transforms from frame $B$ to frame $A$, anything being multiplied from the right must be in frame $B$, and anything being multiplied from the left must be in frame $A$.  This notation is consistent throughout the thesis and in the code to avoid confusion.
+%TODO: add reference to niko's tutorial
+
+%a point $\bv{P}_A$ multiplied by $^W\bv{T}_A$ from the right transforms it to $\bv{P}_W$.
+
 
 \section{Lie Groups}
 \label{sec:lie_group}
 
 A Lie group $G$ is a set of elements that must satisfy a number of axioms, mainly; the group must be closed under its binary operation, it must be associative, it must have a unique identity element and each element must have a unique inverse.  A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.
+%TODO add reference
 %link to copy formulas:
 %https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&ved=0CC4QFjAA&url=http%3A%2F%2Fwww.ai.sri.com%2F~agrawal%2Ficcv05.pdf&ei=tzWQUrW_JYqjrgGgyoHgBQ&usg=AFQjCNEf5gEIFxkeoWnymDixktsxuHRilQ&sig2=94gwoKQvghQEIh_nLeAZ8A&bvm=bv.56988011,d.aWM
 
-In this work, the special euclidean groups $SO(3)$ and $SE(3)$ are used to represent rotations and rigid body transformations respectiveley.  They are defined as follows:
-
+In this work, the special euclidean groups $SO(3)$ and $SE(3)$ are used to represent rotations and rigid body transformations respectiveley.  They may be defined as Lie Groups as follows:
+ 
 \begin{align}
   SO(3) = \{ R \mid R \in GL(3), RR^T = I, \det(R) = 1 \} \\
   SE(3) =  \left\{ \left( 
@@ -88,10 +132,10 @@ where
           + \dfrac{\|\omega\| - \sin\|\omega\|}
                   {\|\omega\|^3}\hat\omega^2
 \end{align}
-Note that $\hat\omega$ and $u$ may both be represented by three numbers.  Therefore the exponential map allows a minimal representation of rotation and transformations in terms of parameterization.  This will be utilized later (Sections \ref{sec:oplus}, \ref{sec:error_function}).
+Note that $\hat\omega$ and $u$ may both be represented by three numbers.  Therefore the exponential map allows a minimal representation of rotation and transformations in terms of parameterization.  This will be utilised later (Sections \ref{sec:oplus}, \ref{sec:error_function}).
 
 \section{Camera Models}
-
+\label{sec:camera_models}
 In order to utilise a camera as a sensor, a mapping between image coordinates and world coordinates needs to be derived.  This allows observations of the camera to be transformed into meaningful measurements.  To achieve this mapping a sensor model of the camera is required. This section will cover all the different types of cameras used in this work and corresponding camera models for each. 
 
 \subsection{Pinhole Camera Model}
@@ -172,6 +216,7 @@ compensated for}
 % ask matthias for literature
 
 \section{Computer Vision Basics}
+\label{sec:computer_vision}
 
 \subsection{Feature point detection and extraction}
 \label{subsec:features}
@@ -203,6 +248,7 @@ explain this cos its easy and fun.  Cite a paper
 %ask for matthias for relavent literature
 
 \subsubsection{Point triangulation}
+\label{subsec:point_triangulation}
 
 %ask for matthias for relavent literature
 
@@ -218,7 +264,8 @@ Bag of words \\
 Vocabulary tree, Nister \\
 fabmap
 
-\section{Visual SLAM}
+\section{SLAM}
+\label{sec:slam}
 
 Simulataneous Localization and Mapping (SLAM) is the technique of building a map of a previously
 unexplored area whilst simultaneously determining a position (localizing) within that map.  The
@@ -239,57 +286,80 @@ Feature extraction involves finding unique features within the sensor data that 
   \caption{Simple generic SLAM representation }
 \end{figure}
 
-Pose estimation involves using the information of how multiple landmarks have moved over time with respect to the robot/sensor, in order to determine how the robot has moved with respect to those landmarks.  Finally, having determined a map of landmarks, and a pose with respect to those landmarks, a global optimization over all landmarks and robot poses may be performed in order to produce a globally consistent map and trajectory.  In the past this has commonly been done by using a kalman filter (cite) and by adding all landmarks to the system state. In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state as per filtering.  This has been proved to improve accuracy of SLAM systems.  (cite hauke why filter).
+Pose estimation involves using the information of how multiple landmarks have moved over time with respect to the robot/sensor, in order to determine how the robot has moved with respect to those landmarks.  
 
-SLAM has taken many forms depending on sensors available. Visual SLAM denotes performing SLAM using some kind of camera.  In recent times, a plethora of visual SLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.  A keyframe SLAM system similar in concept to the PTAM approach has been utilised as the basis for this work.  The basic operation for this style of SLAM will be outlined here.
+At this stage it is possible to calculate a map and trajectory by performing pose estimation between the current and previous frame and chaining all consecutive pose estimations together.  However this is a rather simple approach, as no temporal information (i.e. information from older sensors data or older poses) is considered when determining the current pose.  Therefore it is desirable to have some 'global optimization' strategy to optimize the trajectory and map over non consecutive sensor data.
+
+There are two established approaches to address this.  The first and more well known approach is the use of filtering, e.g. the Extended Kalman Filter (EKF) or the Particle Filter.  In the case of Kalman filtering, landmark positions are added to the system state.  In the case of particle filtering, many initial random robot poses are considered and the particles converge to a solution.
+%TODO: EKF, particle, davidson
+
+In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state at the time of observation as per filtering.  This has been proved to improve accuracy of SLAM systems.
+%TODO: hauke why filter
+
+\section{Visual SLAM}
+
+SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  In recent times, a plethora of VSLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.
 
 \subsection{Basic VSLAM pipeline}
 
-The following is a description of a basic pipeline for visual SLAM.  Whilst the SLAM system that this work is based on is somewhat more complex, this shows how all the above algorithms may be used together to form a complete SLAM pipeline.  The utilised SLAM system will be discussed in section \ref{chapter:ScaViSLAM}
+The following is a description of a basic pipeline for VSLAM.  Whilst the SLAM system utilised by this work as an underlying framework is somewhat more complex, this section shows how all the algorithms in Sections \ref{sec:camera_models}, \ref{sec:computer_vision}, and \ref{sec:bag_of_words} may be used together to form a complete SLAM pipeline.  The SLAM system actually used will be discussed in more detail in Section \ref{chapter:ScaViSLAM}
 
-The feature extraction in Visual SLAM involves using image feature detectors/ descriptors as outlined in section \ref{subsec:features}.  These features may then be referred to as landmarks. For a single observation of a landmark from one frame of a single camera, one can determine a 3D ray from the current camera pose by making use of the camera model as outlined in section \ref{subsec:pinhole_cam}.  Multiple observations from multiple frames allows for multiple rays to intersect at this landmark, thus a 3D position of the landmark may be estimated using triangulation. In the case of a stereo camera, the 3D estimate more or less comes for free, as landmarks may be triangulated from left and right camera frame.
+The feature extraction in VSLAM involves using image feature detectors/descriptors (\ref{subsec:features}).  A feature point may then be considered as a single observation of a landmark.  This observation may be represented as a 3D ray from the current camera pose to the landmark by making use of the camera model (\ref{subsec:pinhole_cam}).  Multiple observations over multiple frames allow for multiple rays to intersect at this landmark, and therefore a 3D position of the landmark may be estimated using triangulation (\ref{subsec:point_triangulation}). In the case of a stereo camera, the 3D estimate more or less comes for free, as landmarks may be triangulated from left and right camera frame.
 
-The data association stage is performed by doing feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of monocular SLAM (2D-2D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transform between frames. The error is calculated by projecting landmarks from one frame to the next by applying the transformation to each of them. The error is then the sum of the distances between points of one frame, and the corresponding points transformed to that same frame. \ref{eq:ransac_error}
+The data association stage is performed by excectuting feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of initializing monocular SLAM (2D-2D correspondances), the p3p algorithm (\ref{subsec:p3p}) for tracking in monocular SLAM (2D-3D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transformation between frames. 
+
+The error may be either euclidean distance between points or reprojection error after the all points have been transformed to one of the frames for comparison by applying the transformation. Eq. \ref{eq:ransac_error} provides an example using euclidean distance as an error function for points with estimated 3D locations.
 
 \begin{figure}[h]
  \centering
  \begin{math}
-  e = \sum\limits_{\bv p_i} \bv p^a_i - ^a\bv T_b \cdot \bv p^b_i
+  \bv{e} = \sum\limits_{i=0}^n \| (\bv p_A)_i - ^A\bv T_B \cdot (\bv p_B)_i \|
  \end{math}
- \caption{RANSAC error function.  this formula sucks needs formatting}
+ \caption{RANSAC error function example using euclidean distance}
  \label{eq:ransac_error}
 \end{figure}
-%TODO: fix formula
 
-Bundle adjustment over all landmarks and camera poses is commonly achieved with a graph optimization. This will be expanded on in sec \ref{subsec:graph_slam}
+Global optimization may be done with filtering.  Davidson et al. has a prominent example of such a system.  However as mentioned before graph optimzation has been shown to be more accurate and is now more common in VSLAM.  The formulation of graph optimization will be expanded on in Section \ref{subsec:graph_slam}.
+%TODO davidson, ptam
 
 \subsection{Keyframe SLAM}
+
+As mentioned in Section \ref{sec:slam}, graph optimization allows all measurements such as pose estimations, feature keypoint locations or landmark positions to be stored and all combined in one global optimization step.  However if every camera frame were to be considered, with an average video camera operating at 30Hz, this would quickly lead to a computationally intractable problem.  Therefore some strategy is required to reduce the amount of data to be optimized.
+
+Keyframe SLAM provides such a strategy.  The idea of keyframe SLAM is that certain camera frames are choosen as 'keyframes'.  Keyframes along with triangulated landmarks are added to the graph to be optimized.  For all other frames inbetween keyframes, tracking is still performed to provide an accurate current pose, however any information gathered does not contribute to the global map.  An illustration of keyframe SLAM can be seen in Fig. \ref{fig:keyframe_slam}.  Using this strategy, the graph optimization performs a bundle adjustment over all keyframe poses and landmark positions, based on shared observations of landmarks. 
 
 \begin{figure}[h]
   \centering
     \includegraphics[width=0.7\textwidth]{chapters/images/keyframes}
-  \caption{Keyframe SLAM.  The large bold coordinate systems represent keyframes whilst the smaller ones denote intermediate frames}
+  \caption{Keyframe SLAM.  The coordinate systems with cameras overlayed represent keyframes whilst the other ones represent intermediate frames}
+  \label{fig:keyframe_slam}
 \end{figure}
 
-The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera with respect to that keyframe.  If the camera moves or rotates a significant distance away from the active keyframe, a new keyframe will be created with a known transformation to the previous keyframe.
+Keyframes may be selected based on a set of criteria such as minimum number of landmarks still visible from the previous keyframe, distance traveled from the previous keyframe, absolute value of rotation to the previous keyframe or time elapsed since the last keyframe was created. 
 
-The intent is to have a fast localization thread that runs in realtime providing an accurate pose estimation with respect to the keyframe.  The mapping thread that deals with the keyframe runs at a much lower framerate, and handles changing the keyframe, global optimization(?), something else. The overall outcome is a system that provides an accurate pose in global coordinates with a fast update rate, as well as a globally consistent map.
-%TODO: read PTAM paper again.  You do not know what the hell you are on about here
+The structure of keyframe SLAM lends itself to separate the mapping and tracking pipelines to different threads.  PTAM is a noteable example of which.  In this case the tracking thread is optimized to excectute quickly, so it can run in realtime without skipping frames, and the mapping thread is responsible for graph optimization and may run slower.  This allows for an accurate estimation and fast update rate, and also a globally consistent map.
+%TODO: cite PTAM
+
+%The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera with respect to that keyframe.  If the camera moves or rotates a significant distance away from the active keyframe, a new keyframe will be created with a known transformation to the previous keyframe.
+
+%The intent is to have a fast localization thread that runs in realtime providing an accurate pose estimation with respect to the keyframe.  The mapping thread that deals with the keyframe runs at a much lower framerate, and handles changing the keyframe, global optimization(?), something else. The overall outcome is a system that provides an accurate pose in global coordinates with a fast update rate, as well as a globally consistent map.
 
 \subsection{Loop Closure}
 \label{subsec:loop_closure}
 
-A common problem with visual SLAM systems is that the pose estimation between frames is not perfectly accurate.  While locally this is not a problem, if the camera is to move a long distance this error will accumulate, as the current pose is a product of all the previous frame to frame transformations.  This effect can easily be demonstrated by performing a long trajectory and returning to the start point.  Whilst the camera is in its original position, the estimated pose will be some offset from the origin.
+A common problem with visual SLAM systems is that the pose estimation between frames is not perfectly accurate.  While locally this is not a problem, if the camera is to move a long distance this error will accumulate, as the current pose is the product of all previous poses chained together.  This effect can easily be demonstrated by performing a long trajectory and returning to the start point.  Whilst the camera is in its original position, the estimated pose will be some offset from the origin. See Fig. \ref{fig:loop_closure}.
 
 \begin{figure}[h]
   \centering
     \includegraphics[width=0.5\textwidth]{chapters/images/loop-closure}
   \caption{Loop Closure}
+  \label{fig:loop_closure}
 \end{figure}
+%TODO: change this with a before after shots from presentation g2o graph
 
-It is possible to compensate for this visual odometry drift by performing 'large loop closures'. After returning to a previous location, the current frame can be registered against an earlier recorded frame at this location using the standard pipeline of pose estimation based on shared landmark observations.  The current pose may be corrected to the correct position by adjusting all of the previous poses slightly.  This adjustment may be performed efficiently and optimally using graph optimization.
+It is possible to compensate for this drift by performing 'large loop closures'. After returning to a previous location, the current frame can be registered against an earlier recorded frame at this same location using the standard pipeline of pose estimation based on shared landmark observations.  The current pose is then corrected to the correct position by adjusting all of the previous poses slightly.  This adjustment may be performed efficiently and optimally using graph optimization.
 
-\section{Graph SLAM}
+\section{Graph Optimization}
 \label{subsec:graph_slam}
 
 To express an optimization problem as a graph, one can think of vertices as being variables, or states, to optimize over, and edges as being constraints for 1 or more vertices.  Edges for a single vertex are called unary edges, for two vertices binary edges and more than 2 multi edges.  Vertex states may be one or more dimensions.  Having said that, vertices may also be used as parameters in the optimization problem.  Error functions to minimise are then defined as how well vertex states fit their edge constraints.  Due to the fact an edge may connect more than two vertices, this type of graph is referred to as a hyper-graph.
@@ -297,13 +367,13 @@ To express an optimization problem as a graph, one can think of vertices as bein
 An example of how a simple SLAM problem may be expressed as a hyper-graph is shown below.
 \begin{figure}[h]
   \centering
-      \includegraphics[width=1.0\textwidth]{chapters/images/simple_slam}
+      \includegraphics[width=0.8\textwidth]{chapters/images/simple_graph}
   \caption{A simple SLAM graph for a generic robot.  Circles are vertices to optimize over, and
 squares are edges, which in this case are measurements}
 \end{figure}
 
 The diagram shows robot poses as $\bv P_i$.  These poses could be represented by any number of dimensions. In the case of an exploratory robot, this is likely to be 3 dimensional (x, y, and yaw for movement on a fixed plane), or 6 dimensional (x, y, z, rotation about x, rotation about y, rotation about z).  $\bv U_i$ are binary edges, representing odometry measurements between robot poses. These are measurements or constraints and will remain unchanged during optimization.  
-$\bv L_i$ represents unique landmarks that the robot can sense and make some form of measurement relative to its own position, as well as re-identify in different robot poses.  A landmark could be a corner from a laser scan or a feature point in a camera image.  K represents calibration parameters of the sensor.  This could be something like an offset, camera intrinsic parameters, or an extrinsic parameter to transform the sensor readings from the sensor frame to the robot frame.  $\bv {ob}_i$ are observation multi-edges, between a robot pose, a landmark, and the calibration parameter.
+$\bv L_i$ represents unique landmarks that the robot can sense and make some form of measurement relative to its own position, as well as re-identify in different robot poses.  A landmark could be a corner from a laser scan or a feature point in a camera image.  $\bv K$ represents calibration parameters of the sensor.  This could be something like an offset, camera intrinsic parameters, or an extrinsic parameter to transform the sensor readings from the sensor frame to the robot frame.  $\bv {ob}_i$ are observation multi-edges, between a robot pose, a landmark, and the calibration parameter.
 
 Such an example of graph optimization would allow an optimization of the poses of the robot, positions of the landmarks, and the sensor calibration, based on all odometry and observation measurements.
 
@@ -354,11 +424,12 @@ Where $c_k = \bv e_k^T \bv \Omega_k \bv e_k$, $\bv b_k = \bv e_k^T \bv \Omega_k 
    \bv H \Delta \bv x^* = -\bv b
 \end{align}
 
-$\bv H$ is a very large sparse square matrix.  It is mostly zeros; it only contains non zero values where there is a constraint connecting blocks.  This matrix can be efficiently solved by taking advantage of the fact that is is sparse, for instance, by Cholesky factorization.
+$\bv H$ is a very large sparse square matrix.  It is mostly zeros; it only contains non zero values where there is a constraint connecting blocks.  This matrix can be efficiently solved by taking advantage of the fact that it is sparse, for instance, by sparse Cholesky factorization.
+%TODO cite cholmod csparse
 
-\subsection{Operator to apply increments in optimization}
+\subsection{Update Operator}
 \label{sec:oplus}
-%TODO: oplus fill in 
+
 As part of the SLAM problem, it is common to have parameterization in non Euclidean space.  For instance, a 3 dimensional pose $SE(3)$ is described by a translational part $\mathbb{R}^3$, which is clearly Euclidean, and a rotational component $SO(3)$ which is not euclidean.  The rotation part is often described in some over parameterized way, for instance quaternions or rotational matrices.  
 
 The solver is mostly likely to be agnostic about the exact representation of the vertex state, it just knows the degrees of freedom of a vertex.  This means during optimization the optimizer will provide increments to the vertex in the form of a vector with as many values as degrees of freedom.  If the rotational part was expressed as a rotation matrix, then somehow this 3D vector needs to be applied to the matrix in a sensible way.  The vector may not be simply added or multiplied to the matrix due to the non euclidean nature of this representation.

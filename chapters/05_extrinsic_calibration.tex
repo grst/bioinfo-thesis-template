@@ -7,7 +7,7 @@ In order to combine cameras together in one framework, extrinsic calibration bet
 \label{sec:ros_tool}
 %TODO: understand this better
 
-An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from both cameras, a non linear optimization to determine the 6D transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package.\footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}.  This package was utilized in order to obtain a initial estimate of the transformation from stereo to omni camera.
+An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from both cameras, a non linear optimization to determine the 6D transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package.\footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}.  This package was utilised in order to obtain a initial estimate of the transformation from stereo to omni camera.
 
 \begin{figure}[h!]
   \centering
@@ -77,7 +77,7 @@ The advantage of this algorithm is that the perspective image plane is very conf
 \section{Online validation of extrinsic calibration}
 \label{sec:verification_tool}
 
-Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilized.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then by reprojected into the omni camera image using the extrinsic calibration.
+Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilised.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then by reprojected into the omni camera image using the extrinsic calibration.
 
 \begin{figure}[h!]
   \centering
