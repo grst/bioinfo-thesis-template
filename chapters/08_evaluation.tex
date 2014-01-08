@@ -23,7 +23,7 @@ The stereo camera has a baseline of 12cm.  The each video camera has a resolutio
 
 \begin{figure}[h]
   \centering
-    \includegraphics[width=0.7\textwidth]{chapters/images/svc}
+    \includegraphics[width=0.4\textwidth]{chapters/images/svc}
   \caption{Bosch stereo camera}
   \label{fig:bosch_svc}
 \end{figure}
@@ -44,7 +44,11 @@ The AVT camera is a generic camera, not specifically designed for omni-direction
 
 \subsubsection{Camera Calibration}
 
-Theory behind all the algorithms used is explained in Chapter \ref{chapter:extrinsic_calibration}, this section will describe the procedure undertaken.  The first step involved using the ROS calibration tool described in Section \ref{sec:ros_tool}.  This tool requires no initial condition to determine a calibration.  This was performed indoor with a checkerboard, but produced poor results because of the limited room to move the checkerboard around.
+Theory behind all the algorithms used is explained in Chapter \ref{chapter:extrinsic_calibration}, this section will describe the procedure undertaken.  
+
+Intrnsic calibration of the stereo camera was performed using the ROS package camera\_calibration\footnote{\url{http://wiki.ros.org/camera_calibration}}.  Intrinsic calibration of the omni camera was done using tools from an internal Bosch vision library.
+
+Having calibrated the intrisic parameters, the first step of extrinsic calibration was using the ROS calibration tool described in Section \ref{sec:ros_tool}.  This tool requires no initial condition to determine a calibration.  This was performed indoor with a checkerboard, but produced poor results because of the limited room to move the checkerboard around.
 
 The calibration from the ROS calibration was used as an initial condition for the non linear optimization refinement. (See Section \ref{sec:g2o_extrinsic_cal}).  Video data was recorded outside using the online verification tool \ref{sec:verification_tool}.  In order to collect points of different depth, a textured surface was held in front of the camera at close range and moved slowly away.  Being outside, many distant points were also recorded.  The non linear extrinsic refinement tool was then run to obtain a refined calibration.   
 

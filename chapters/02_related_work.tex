@@ -1,5 +1,5 @@
 
-\chapter{Related Work}
+\chapter{Background and Related Work}
 \label{chapter:Related_Work}
 
 %\begin{figure}[h]
@@ -10,8 +10,6 @@
 
 \section{3D geometry}
 
-%Yes  - do coordinate systems, transformations, notation
-%Brief description of SE(3) and SO(3)
 Throughout this work the notion of rigid body transformations and coordinate frames will be used to describe relative motion of bodies.  A rigid body is a solid body where deformation is neglected.  A rigid body transformation is a transformation of some vector space which preserves distances between every pair of points, thus preserving the solid body assumption of rigid bodies. In this work rigid body transformations of 3 dimensional space $\mathbb{R}^3$ will be considered.
 
 A transformation can be described by a rotation followed by a translation.  For $\mathbb{R}^3$ space, there are 3 axes of rotation and 3 axes of translation, and therefore a transformation has 6 degrees of freedom.  These transformations, also known as  'poses', may be described by the special euclidean group $SE(3)$.  Special euclidean groups and Lie Algebra will be covered in \ref{sec:lie_group}.
@@ -143,48 +141,59 @@ In order to utilise a camera as a sensor, a mapping between image coordinates an
 
 %TODO: references
 
-The pinhole camera model is the most basic and common of camera models used in computer vision.  It describes the mathematical relationship between the coordinates of a 3D point in the world and its projection onto an image plane.  This model assumes the aperture of the camera to be an ideal pinhole. It does not consider lenses used to focus light which in reality result in lense distortion.  It does also not take into account sensor quantization apparent in using a modern digital CCD sensor. Nevertheless it still provides a sufficient model of camera projection for this work, and practical considerations such as image size, resolution and lense distortion can be compensated for.
+The pinhole camera model is the most basic and common of camera models used in computer vision.  It describes the mathematical relationship between the coordinates of a 3D point in the world and its projection onto an image plane.  This model assumes the aperture of the camera to be an ideal pinhole. It does not consider lenses used to focus light which in reality results in lense distortion.  However practical considerations such as lense distortion can be compensated for.
 
-When using the pinhole camera model, the camera is assumed to be a sealed box with a pinhole aperture on one side, and the image plane, or image sensor on the other side.  Having a small aperture blocks most of the light rays from objects in the world and allows a focused and inverted image of the world to be recorded. In this case the focal point is the aperture and the focal length is the distance from the aperture to the sensor. fig. whatever. For all intensive purposes, this model can be redrawn as in fig. whatever whatever. The image plane is inverted and shown reflected in front the of the camera.  As long as the focal length can be determined, it is then trivial to calculate coordinates on the sensor for a given ray or world coordinate using simple geometry. Sensor coordinates can then be converted to image coordinates given the physical size of the CCD and its resolution.  
+The pinhole camera model assumes the camera to be a sealed box with a pinhole aperture on one side, and the image plane, or image sensor on the other side.  Having a small aperture blocks most of the light rays from objects in the world and allows a focused and inverted image of the world to be recorded. Fig. \ref{fig:pinhole_inverted}
 
-Take note the principle point is often not in the sensor of the image, and therefore the coordinates of this point on the sensor needs to be determined.  In addition the focal length varies from camera to camera and therefore both of these values need to be determined by performing an intrinsic calibration. For the calibration, the focal length may be expressed in pixel units, which means the conversion from metric sensor coordinates ( m) to pixel coordinates (u,v) is also performed in one step.
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/pinhole_cam_1} \\
+  \caption{Pinhole camera model}
+  \label{fig:pinhole_inverted}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/pinhole_cam_2} \\
+  \caption{Pinhole camera model represented with the image plane in front of the focal point}
+  \label{fig:pinhole_normal}
+\end{figure}
+
+For all intensive purposes, this model can be redrawn as in Fig. \ref{fig:pinhole_normal}. The image plane is inverted and shown reflected in front the of the camera.  In addition it is helpful to express the focal length differently.  Image plane coordinates need to be converted to sensor coordinates (that is, pixel coordinates; u,v).  This can be determined given the image sensor size and its resolution.  As this is linear operation, this conversion may be applied to the metric focal length and thus focal length expressed in pixel units.  Given Fig. \ref{fig:pinhole_normal} and the focal length expressed in pixel units, image coordinates and world coordinates may then be related as follows: 
+
+\begin{align}
+  \dfrac{u}{f_x} = \dfrac{x}{z}
+\end{align}
+
+This relation is just the x-z plane however the exact same can be applied for the y-z plane.   
+
+Take note that the principle point (center of image) will not be aligned exactly to the center of the image sensor, some offset will exist and will vary from camera to camera.  In addition the focal length varies slightly from camera to camera.  Therefore to properly convert from world coordinates to image coordinates and back both the the x and y focal lengths, and the image coordinates of the principle point need to be determined.  This can be done by performing an intrinsic calibration.
+%TODO: references
 
 %http://www.jordicenzano.name/projects/2D-to-3D-Paradigm-overview/camera-model
 %use this for picture motivation
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=0.5\textwidth]{chapters/images/cam_model_fig2}
-  \caption{Pinhole camera model}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=0.8\textwidth]{chapters/images/cam_model_fig41} \\
-    \includegraphics[width=0.2\textwidth]{chapters/images/cam_model_fig42} \\
-    \includegraphics[width=0.8\textwidth]{chapters/images/cam_model_fig43} 
-  \caption{Pinhole camera model with image plane shown inverted in front of the focal point}
-\end{figure}
-
-%%TODO: I stole these pictures.  I want to redraw them myself
 
 \subsection{Lense Distortion}
 \label{subsec:lense_distortion}
 %TODO: references
 
-The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is used to focus more light rays onto the sensor and allowing a sharper image.  Such as setup can be seen in fig. xyz.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  Lense distortion causes lines to be curved, as in fig x.  It is also possible during the intrinsic calibration to simultaneously determine distortion coefficients which allow the image to be reshaped such that all straight lines appear straight.
+The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is often used to focus more light rays onto the sensor and allow a sharper image.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  reference shows how to correct for lense distortion given a set of distortion parameters associated with a camera.  These coefficients may be determined through calibration.  Fig. \ref{fig:lense_distortion} shows an example of lense distortion and how it can be compensated for.
+
+Calibration of focal lengths, principle points and distortion coefficients can all be done in one step using a checkerboard of known geometry.  This is called intrinsic calibration.
+
+%When undistorting the image it is not uncommon that parts of the new image around the border will contain no information.  This is overcome by cropping and resizing the image.  This affects calibrated focal length parameters.  However when remapping a new image, new focal lengths can also be determined.
 
 \begin{figure}[h]
   \centering
     \includegraphics[width=0.49\textwidth]{chapters/images/distorted}
     \includegraphics[width=0.49\textwidth]{chapters/images/undistorted}
-  \caption{Left: An image with lense distortion.  Right: The same image with lense distortion
-compensated for}
+  \caption{Left: An image with lense distortion.  Right: The same image redrawn with lense distortion considered}
+ \label{fig:lense_distortion}
 \end{figure}
 
 \subsection{Homogeneous coordinates}
 
-%%TODO: homogeneous coordinates
+In order to convert from world coordinates to image coordinates and back homogeneous coordinates are used.  This means writing the image coordinates as a $\mathbb R^3$ projective vector $(u, w, 1)^T$.  The conversion from world coordinates to image coordinates may be calculated as follows
 
 \begin{equation}
  \begin{pmatrix}
@@ -202,10 +211,75 @@ compensated for}
  \end{pmatrix}
 \end{equation}
 
+Where $f_x$ and $f_y$ are x and y focal lengths and $c_x$ and $c_y$ is the pixel coordinates of the principle point.  The 3x3 matrix is known as the camera matrix, or $\bv K$.
+
+After evaluating the right hand side of the equation, in order to obtain pixel coordinates, the 3D vector needs to be normalised by dividing element wise by the third element:
+\begin{equation}
+ \begin{pmatrix}
+  \frac{X}{Z}  \\
+  \frac{Y}{Z}  \\
+  \frac{Z}{Z} 
+ \end{pmatrix} =
+ \begin{pmatrix}
+  u \\ v \\ 1
+ \end{pmatrix}
+\end{equation}
+
+Converting back from image coordinates to world coordinates may be performed by taking the inverse of the camera matrix:
+
+\begin{equation}
+ \begin{pmatrix}
+  f_x & 0 & c_x \\
+  0 & f_y & c_y \\
+  0 & 0   & 1 
+ \end{pmatrix}^{-1}
+ \begin{pmatrix}
+  u \\
+  v \\
+  1 
+ \end{pmatrix} =
+ \begin{pmatrix}
+  X \\ Y \\ Z
+ \end{pmatrix}
+\end{equation}
+
+This will return a 3D vector that points in the direction of the corresponding 3D coordinates.  Exact 3D coordinates for the point is impossible estimate from a single image as the real world point could lie anywhere on this 3D ray.
 
 \subsection{Stereo Camera}
 
+A stereo camera consists of two regular projective cameras fixed to the same frame with some amount of field of view overlap.  Given that the geometry between the two lenses is known, image points that can be associated between the two images may be triangulated to provide metric, 3D world coordinates with respect to the camera.  A stereo camera can be modelled by two pinhole cameras.  Both cameras can have all their intrinsic parameters calibrated separately as per normal cameras.  
+
+In order to determine 3D data from a stereo camera, first a points need to be associated across both frames.  This means that if there are indiscriminate areas of the stereo image, such as a textureless wall, depth values can not be determined for these pixels. Point association is often achieved via feature matching (Section \ref{subsec:features}).
+
+To make searching for and triangulation of points easier, the two cameras in stereo cameras are often mounted side by side and in the same image plane.  This allows much easier association of points between frames, as a point in one image only needs to be searched for in the other image along the same pixel row.
+
+Having associated points between frames, a disparity value needs to be calculated for each pair.  Disparity is defined as
+\begin{align}
+  d = u_l - u_r
+\end{align}
+where $u_l$ is the pixel x coordinate in the left frame and $u_r$ is the pixel x coordinate in right frame.
+From Fig. \ref{fig:stereo_disparity}:
+\begin{align}
+  \dfrac{Z}{b} = \dfrac{f}{d}  \\  
+   \Rightarrow Z = \dfrac{f \cdot b}{d}
+\end{align}
+Where $b$ is the baseline; the distance between the two stereo cameras.
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/stereo_disparity}
+  \caption{Using disparity to calculate depth.  A fake ray with a image coordinate of $d$ is visualized in the left frame to determine the depth of a world point}
+  \label{fig:stereo_disparity}
+\end{figure}
+
+Having determined the depth, x and y coordinates may easily be determined using the pinhole camera model.
+
+This is a very straightforward approach to stereo triangulation.  In practice this can be improved by feature point detection with subpixel accuracy, disparity interpolation or dense stereo matching.
+
+%TODO lots and lots of stereo citations
+
 \subsection{Omni-directional Camera}
+
+Some stuff
 
 \begin{figure}[h]
   \centering
@@ -448,3 +522,7 @@ The error function $\bv e_k(\bv x_k, \bv z_k)$ measures how well the vertices fi
 %TODO huber fill in
 %Use huber instead of squares to make robust against outliers. !
 %CBF
+
+\section{Related work}
+
+google some stuff!
