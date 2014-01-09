@@ -17,6 +17,7 @@ An extrinsic calibration between multiple perspective cameras can be performed g
 \end{figure}
 
 \section{Undistorted Perspective Image from Omni-Camera}
+\label{sec:perspective_from_donut}
 
 The package as described above for the extrinsic calibration works only for perspective cameras. This means cameras for which the intrinsic parameters are known and images are rectified such that all straight lines appear straight, and each pixel can be mapped to a 3D ray.  However this is not the case for the omni camera.  Both the original donut image and unwrapped circular image are distorted and can not be used by the camera pose calibration package.  Therefore a new camera projection for the omni cam is necessary, to represent part of the omni image as a perspective type projection.
 

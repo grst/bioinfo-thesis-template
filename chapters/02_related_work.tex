@@ -245,7 +245,17 @@ Converting back from image coordinates to world coordinates may be performed by 
 
 This will return a 3D vector that points in the direction of the corresponding 3D coordinates.  Exact 3D coordinates for the point is impossible estimate from a single image as the real world point could lie anywhere on this 3D ray.
 
+When converting to world coordinates in this manner, the camera reference frame they will be expressed in is shown in Fig. \ref{fig:cam_coord_sys}
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.2\textwidth]{chapters/images/cam_coord_sys}
+  \caption{Camera coordiante system.}
+ \label{fig:cam_coord_sys}
+\end{figure}
+
 \subsection{Stereo Camera}
+\label{subsec:stereo_cam}
 
 A stereo camera consists of two regular projective cameras fixed to the same frame with some amount of field of view overlap.  Given that the geometry between the two lenses is known, image points that can be associated between the two images may be triangulated to provide metric, 3D world coordinates with respect to the camera.  A stereo camera can be modelled by two pinhole cameras.  Both cameras can have all their intrinsic parameters calibrated separately as per normal cameras.  
 
@@ -253,23 +263,27 @@ In order to determine 3D data from a stereo camera, first a points need to be as
 
 To make searching for and triangulation of points easier, the two cameras in stereo cameras are often mounted side by side and in the same image plane.  This allows much easier association of points between frames, as a point in one image only needs to be searched for in the other image along the same pixel row.
 
+
 Having associated points between frames, a disparity value needs to be calculated for each pair.  Disparity is defined as
 \begin{align}
   d = u_l - u_r
 \end{align}
 where $u_l$ is the pixel x coordinate in the left frame and $u_r$ is the pixel x coordinate in right frame.
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/stereo_disparity}
+  \caption{Using disparity to calculate depth.  A fake ray with an image coordinate of $d$ is visualized in the left frame to determine the depth of a world point}
+  \label{fig:stereo_disparity}
+\end{figure}
+
+
 From Fig. \ref{fig:stereo_disparity}:
 \begin{align}
   \dfrac{Z}{b} = \dfrac{f}{d}  \\  
    \Rightarrow Z = \dfrac{f \cdot b}{d}
 \end{align}
 Where $b$ is the baseline; the distance between the two stereo cameras.
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=1.0\textwidth]{chapters/images/stereo_disparity}
-  \caption{Using disparity to calculate depth.  A fake ray with a image coordinate of $d$ is visualized in the left frame to determine the depth of a world point}
-  \label{fig:stereo_disparity}
-\end{figure}
+
 
 Having determined the depth, x and y coordinates may easily be determined using the pinhole camera model.
 
@@ -279,7 +293,18 @@ This is a very straightforward approach to stereo triangulation.  In practice th
 
 \subsection{Omni-directional Camera}
 
-Some stuff
+The omni direction camera uses a lenses and mirrors to direct light from a 360$^{\circ}$ viewing angle onto one image plane.  The resulting image is in the shape as a donut, with blind spots in the middle and around the edges. Fig. \ref{fig:omni_donut}.
+
+In order to project points from image to world and world to image coordiantes, the omnidirectional camera model described by Scaramuzza et al. was used and their Matlab toolbox was utilized for calibration. Mei and Rives also provide a different camera model for omnidirectional cameras.
+
+Given the camera model, the image may be reprojected to a spherical image (for example see Fig. \ref{fig:unwrapped}), or to a perspective image (see Section \ref{sec:perspective_from_donut}).  For points projected to world coordinates, the omni camera frame is shown in Fig. \ref{fig:omni_coord_sys}.
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.4\textwidth]{chapters/images/donut}
+  \caption{Raw Omni-directional camera image}
+  \label{fig:omni_donut}
+\end{figure}
 
 \begin{figure}[h]
   \centering
@@ -287,56 +312,121 @@ Some stuff
   \caption{Omni camera coordinate frame}
   \label{fig:omni_coord_sys}
 \end{figure}
-% ask matthias for literature
+%TODO scarramuzza up ya bum!
 
 \section{Computer Vision Basics}
 \label{sec:computer_vision}
 
-\subsection{Feature point detection and extraction}
+\subsection{Feature detection and description}
 \label{subsec:features}
 
-Outline what is feature point detection, description and matching, why we need it.  Mention SIFT and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite the ETH paper. Mention a bunch of other descriptors, cite them as well.
+Feature detection is the process of finding local regions of an image which are distinct and parameterizing them with image coordinates.  The output of a feature detection algorithm is a subset of the image, this could be individual points, edges, curvers or connected regions.  In this work only feature point detection is used, which means parameterizing a feature with individual image coordinates.
+
+Once a feature point has been determined, a descriptor for the identified region needs to be defined, such that it can be reidentified.  This is called feature description.  A naive approach would be to simply use a small image patch around the area of the feature point, however this description would be highly dependant on the viewpoint of the camera, as well as lighting conditions, which makes it not very useful for reidentification.
+
+To overcome this, a multitude of computer vision tools can be applied, such as filtering, blurring, image gradients, sampling, linear transformations, non linear transformations, histograms and dimensionality reduction.  The goal is to design a feature descriptor that is unique and repeatable, as invariant to viewpoint and lighting conditions as possible, computationally efficient and also have a long name which results in a ridiculous acronym.  A plethora of feature description algorithms have emerged in the last 10 years that address these design goals, to name a few; SIFT, SURF, HOG, GLOH, ORB, BRIEF, BRISK, FREAK and DIRD.
+
+%TODO: cite SIFT, SURF, HOG, GLOH, ORB, BRIEF, BRISK, FREAK and DIRD.
+Feature detection and description is important to find distinct, individual points that can be reidentified over multiple frames from different viewpoints.  This forms the basis of data association for visual tracking and visual navigation.
+
+For contributions of this work, namely the camera extrinsic calibration and loop closure pipeline in chapters \ref{chapter:extrinsic_calibration} and \ref{chapter:omni_loop_close}, an implementation of SIFT on the GPU (SIFTGPU) was used.  The underlying SLAM framework described in chapter \ref{chapter:ScaViSLAM} uses a combination of FAST detector and BRIEF extractor.  The place recognition module (Section \ref{sec:bag_of_words}) uses SURF.
+%TODO cite siftgpu
+
+%Outline what is feature point detection, description and matching, why we need it.  Mention SIFT and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite the ETH paper. Mention a bunch of other descriptors, cite them as well.
 
 \subsection{Feature Matching}
 
-include circular matching
+Given two feature descriptors from different images, some test needs to be performed to evaluate a 'likeness' between the two features, such that they may be associated as being the same feature patch or not.
+
+This process varies greatly depending on the feature descriptor selected, as descriptors encode information differently.  For SIFT and SURF, the descriptor contains a vector describing histograms of image gradients detected at or near the feature point.  Vectors can be tested by simply performing a vector distance calculation.
+
+Binary type descriptors on the other hand, for example ORB or BRIEF, encode the descriptor patch as intensity values and are designed to be matched by performing binary operations between the two patches for maximal computational efficiency.
+
+SIFTGPU also has feature matching funtions and is used in this work.
 
 \subsection{Reprojection Error}
+\label{subsec:reprojection_error}
 
-Reprojection error is an important concept that will be referred to many times in this work.  It is a very powerful tool to more accurately model the cameras accuracy as a sensor.
-%TODO
+A common operation that arises in geometry estimation in computer vision is that given a corresponding point pair, calculate the distance between the two points given that they can both be projected into the same reference frame.  A straightforward approach would be to estimate the full 3D position of each point, transform one of them into the same reference frame as the other, and calculate euclidean distance.  This is a valid approach, although some drawbacks exist.  If the 3D position of the point has not been determined accurately, for instance the depth estimation of a very distant point, then this error will be introduced into the distance measurement.  The two points may be closely aligned from the perspective of the camera, but if the 3D estimation is wrong, this correspondance will have a high error associated with it.
+
+Reprojection error compensates for this problem.  To calculate reprojection error both points are transformed to the reference frame of the camera, and then projected into image coordinates using the camera model.  A distance can then be measured in pixels between where the two points occur in the image.  This much more accurately models the precision of the camera sensor.
+%TODO reprojection error citation
 
 \subsection{RANSAC}
 \label{subsec:RANSAC}
+%TODO ransac citation
 
-explain this cos its easy and fun.  Cite a paper
+Random Sample Consensus (RANSAC) is an iterative method for determining parameters of a mathamatical model based on observed data that may contain outliers.  The idea of the algorithm is to parameterize the model such that it best fits only the inliers, and to identify and discard outliers when fitting a model.  The basic algorithm may be described as follows
+
+\begin{enumerate}
+ \item Randomly select the minimum number of data points required to parameterize the mathematical model
+ \item Fit the model to the data points selected
+ \item Compare all other points with this model.  Classify points as either being inliers or outliers based on a predefined threshold distance to the model
+ \item Remember model and inlier count, iterate
+ \item After iteration finishes, use the best model i.e. the one with most inliers.
+ \item (Optional) Refit the model using all inliers
+\end{enumerate}
+
+This algorithm can be improved on by providing some logic to finish iterating early, for instance, if number of inliers if above some threshold or total error is below some threshold.
+
+A simple example of linear regression is illustrated in Fig. \ref{fig:RANSAC}.  Two points are selected at random to define the equation of a line.  Other points are tested for being inliers or outliers by thresholding on the distance measured between them and the line.  This process is repeated and the model with the maximum number of inliers is kept at the end.
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.5\textwidth]{chapters/images/ransac}
+  \caption{Simple RANSAC example.  Blue points are inliers and red points are outliers}
+  \label{fig:RANSAC}
+\end{figure}
+
+RANSAC is used extensively in computer vision, particularly for any algorithm that uses feature matching for data association as feature description and matching will often contain outliers, i.e. false matches.
 
 \subsection{Geometry estimation}
 
+Geometry estimation involves taking point correspondances from two different camera frames, and estimate the camera movement between these two poses, along with the positions of the corresponding points.  There are many different algorithms that differ in terms of type of correspondances.  There are also algorithms which consider certain motion constraints.  The algorithms utlilised in this work will be covered here.
+
 \subsubsection{5 point algorithm}
 \label{subsec:5point}
-%ask for matthias for relavent literature
+
+The 5 point algorithm takes 5 2D $\rightarrow$ 2D correspondances of two camera images and detemines a transformation matrix that transforms from one camera frame to the other. It is important to note that the transformation returned by this algorithm is not in metric scale, that is, it is computed to some arbitrary scale.  This is because it is impossible to infer 3D metric information about the world without some form of prior measurement or extrinsic calibration to the world.  Simply put; it is unknown if the camera has traveled a long distance in a large space, or a short distance in a small space.
+%TODO 5 point citatino
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.4\textwidth]{chapters/images/5_point}
+  \caption{5 Point algorithm}
+  \label{fig:5_point}
+\end{figure}
 
 \subsubsection{p3p algorithm}
 \label{subsec:p3p}
-%ask for matthias for relavent literature
+The p3p algorithm take 3 2D $\rightarrow$ 3D correspondances between a camera frame and some established 3D map, and returns a transformation between the map frame and the camera frame.  This algorithm propagates the scale of the map to the frame being registered.
+%TODO p3p citation
 
 \subsubsection{Point triangulation}
 \label{subsec:point_triangulation}
 
-%ask for matthias for relavent literature
+Point triagulation is the task of estimating the location of a point, given two or more views of that point, and the transformations between those views.  x has a well established algorithm for this problem.
+
+%TODO cite triagulation
 
 \subsubsection{Stereo pose estimation}
 \label{subsec:horn}
 
-Umeyama (PCL) \newline 
-Horn (UVM) \newline
+As mentioned in Section \ref{subsec:stereo_cam}, a stereo camera can calculate 3D metric points for a given frame.  Therefore it is desirable to calculate a pose given a set of 3D $\rightarrow$ 3D correspondances.  This is not only useful for stereo cameras, but for any sensor which can estimate or measure 3D locations of points.
+
+Algorithms have been proposed by Umeyama and Horn to solve this.  Both take at least 3 correspondances and return a 6 DoF transformation between frames.
+
+%TODO cite horn, umyama
 
 \section{Place Recognition}
 \label{sec:bag_of_words}
-Bag of words \\
-Vocabulary tree, Nister \\
-fabmap
+
+Given a set of images, place recognition is the task of 'recognizing' if a new image matches to one or more images in the set.  Unlike the geometry estimation algorithms, this returns a simple true false, or probability match, rather than a frame to frame transformation.  Often for place recognition a wide range of differing images is selected as the set to 'train' on, and by detecting if a new image matches an existing one, then the location of the camera that took the new image should be roughly close to that of the matched image in the training set.
+
+The bag of words approach uses clustering of features in descriptor space.  This is technique taken from object classification.  Similar features are grouped together and put into different bins to form a histogram which describes the entire image.  These histograms may be represented as vectors and compared using vector distance.  In addition many histograms can be stored in a tree structure such as a KD tree to reduce searching time.
+%TODO cite kdtree
+
+More sophistiacted approaches exist, including FABMAP or using a vocabulary tree approach.  There has also been some work in address invariance to lighting conditions, for example DIRD place recognition.  This library uses a new feature descriptor that has been learnt especially for place recognition with lighting condition invariance in mind.
 
 \section{SLAM}
 \label{sec:slam}
@@ -382,7 +472,7 @@ The feature extraction in VSLAM involves using image feature detectors/descripto
 
 The data association stage is performed by excectuting feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of initializing monocular SLAM (2D-2D correspondances), the p3p algorithm (\ref{subsec:p3p}) for tracking in monocular SLAM (2D-3D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transformation between frames. 
 
-The error may be either euclidean distance between points or reprojection error after the all points have been transformed to one of the frames for comparison by applying the transformation. Eq. \ref{eq:ransac_error} provides an example using euclidean distance as an error function for points with estimated 3D locations.
+The error may be either euclidean distance between points or reprojection error (\ref{subsec:reprojection_error}) after the all points have been transformed to the same reference frame for comparison by applying the transformation. Eq. \ref{eq:ransac_error} provides an example using euclidean distance as an error function for points with estimated 3D locations.
 
 \begin{figure}[h]
  \centering
