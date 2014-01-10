@@ -30,19 +30,20 @@ The stereo camera has a baseline of 12cm.  The each video camera has a resolutio
 
 \subsubsection{Omni Camera}
 
-The omni camera used for evaluation was an Allied Vision Technologies\footnote{\url{http://www.alliedvisiontec.com}} (AVT) Stingray camera, paired with a Palnon\footnote{\url{http://www.tateyama.jp/eng/}} omni directional lense.  For the experiments performed, 1280x960 pixel images with 8 bit depth were recorded at 30fps.  
+The omni camera used for evaluation was an Allied Vision Technologies\footnote{\url{http://www.alliedvisiontec.com}} (AVT) Stingray camera, paired with a Palnon\footnote{\url{http://www.tateyama.jp/eng/}} omnidirectional lense.  For the experiments performed, 1280x960 pixel images with 8 bit depth were recorded at 30fps.  
 
-The AVT camera is a generic camera, not specifically designed for omni-directional lenses and operates over a standard firewire 1394 interface.  As a result, the shutter and gain controls needed to be changed to ignore areas of the donut image with no data.  In this case the camera driver\footnote{ROS camera1394 package, \url{http://wiki.ros.org/camera1394}} was modified so that the calculation of the image brightness only considered valid pixels.
+The AVT camera is a generic camera, not specifically designed for omnidirectional lenses and operates over a standard firewire 1394 interface.  As a result, the shutter and gain controls needed to be changed to ignore areas of the donut image with no data.  In this case the camera driver\footnote{ROS camera1394 package, \url{http://wiki.ros.org/camera1394}} was modified so that the calculation of the image brightness only considered valid pixels.
 
 %These images were unwrapped to the circular images with a resolution of 2547x405.
 
 \begin{figure}[h]
   \centering
     \includegraphics[width=0.5\textwidth]{chapters/images/omni_cam_image}
-  \caption{AVT camera with the omni-directional lense and mounting brackets attached}
+  \caption{AVT camera with the omnidirectional lense and mounting brackets attached}
 \end{figure}
 
 \subsubsection{Camera Calibration}
+\label{subsubsec:actual_calibation}
 
 Theory behind all the algorithms used is explained in Chapter \ref{chapter:extrinsic_calibration}, this section will describe the procedure undertaken.  
 
@@ -123,7 +124,7 @@ The second route 'car park loops', involves driving loops around 3 buildings and
     \bottomrule
     \end{tabular}
     \captionof{table}{Statistics on the two datasets recorded}
-  \label{tab:geometry}
+  \label{tab:distances}
 \end{table}
 
 \subsubsection{Driving conditions}

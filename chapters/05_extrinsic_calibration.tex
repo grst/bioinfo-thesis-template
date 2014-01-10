@@ -1,13 +1,13 @@
 \chapter{Extrinsic Calibration}
 \label{chapter:extrinsic_calibration}
 
-In order to combine cameras together in one framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate, as even a very small rotational offset will result in a significant reprojection error when reprojecting points from one camera to another.
+In order to combine cameras together in one visual SLAM framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate i.e. well within 0.1$^{\circ}$.  Even a very small rotational offset will result in a significant reprojection error when reprojecting points from one camera to another.  Take for example a rotational error of 0.5$^{\circ}$.  Over a distance of 10m, this would result in a reprojection error of 8.7 pixels for a standard digital camera.
 
 \section{Extrinsic calibration tool}
 \label{sec:ros_tool}
 %TODO: understand this better
 
-An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from both cameras, a non linear optimization to determine the 6D transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package.\footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}.  This package was utilised in order to obtain a initial estimate of the transformation from stereo to omni camera.
+An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from all cameras, a non linear optimization to determine the 6 DoF transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package.\footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}.  This package was utilised in order to obtain an initial estimate of the transformation from stereo to omni camera.
 
 \begin{figure}[h!]
   \centering
@@ -16,12 +16,12 @@ An extrinsic calibration between multiple perspective cameras can be performed g
   \label{fig:extrinsic_cal_1}
 \end{figure}
 
-\section{Undistorted Perspective Image from Omni-Camera}
+\section{Omni Camera Perspective Image}
 \label{sec:perspective_from_donut}
 
-The package as described above for the extrinsic calibration works only for perspective cameras. This means cameras for which the intrinsic parameters are known and images are rectified such that all straight lines appear straight, and each pixel can be mapped to a 3D ray.  However this is not the case for the omni camera.  Both the original donut image and unwrapped circular image are distorted and can not be used by the camera pose calibration package.  Therefore a new camera projection for the omni cam is necessary, to represent part of the omni image as a perspective type projection.
+The package as described above for the extrinsic calibration works only for perspective cameras. This means cameras for which the intrinsic parameters are known and images are undistorted such that all straight lines appear straight.  However this is not the case for the omni camera.  Both the original donut image and unwrapped circular image are distorted and may not be used by as an input camera pose calibration package.  Therefore a new camera projection for the omni cam is necessary, to represent part of the omni image as a perspective type projection.
 
-An algorithm was developed to create a perspective image for calibration from the unwrapped image.  Library calls exist for mapping a 3D ray to pixel coordinates, and mapping pixel coordinates to a 3D ray.  Given these functions it is fairly trivial to create a perspective image, all that needs to be done is define a 3D rays for every pixel of the required perspective image.  The algorithm for creating 3D rays and populating the perspective image is as follows.
+An algorithm was developed to create a perspective image for calibration from the unwrapped image.  Using Scaramuzza's camera model\cite{scaramuzza_06} there exists a  mapping from 3D ray to pixel coordinates, and pixel coordinates to 3D ray.  Given these functions it is possible to create a perspective image, what is required is a set of 3D rays to be defined for every pixel of the perspective image.  The algorithm for creating 3D rays and populating the perspective image is as follows.
 
 \begin{algorithm}[h!]
  \caption{Algorithm to generate perspective image}
@@ -59,7 +59,7 @@ An algorithm was developed to create a perspective image for calibration from th
   \label{fig:omni_perspective}
 \end{figure}
 
-The focal length will be the desired focal length of the new perspective image, this can be defined by the user.  The size of the perspective image $\bv I(cols, rows)$ may also be defined by the user.  The function project($\bv P$) takes a 3D ray $\bv P$ and projects it to 2D pixel coordinates.  The pixel coordinates returned will be represented as floating point variables.  Therefore, the function bilinearInterpolate($\bv P$) takes these pixel coordinates and produces an approximation of the intensity at these coordinates from the unwrapped image using bilinear interpolation.
+The focal length will be the desired focal length of the new perspective image, this can be defined by the user.  The size of the perspective image $\bv I(cols, rows)$ may also be defined by the user.  The function project($\bv P$) takes a 3D ray $\bv P$ and projects it to 2D pixel coordinates.  The pixel coordinates returned will be represented as floating point variables.  Therefore, the function bilinearInterpolate($\bv P$)(cite) takes these pixel coordinates and produces an approximation of the intensity at these coordinates from the unwrapped image using bilinear interpolation.
 
 In practice the rays will be the same for a set of perspective image parameters.  Therefore the rays are pre-calculated in the form of a perspective pixel coordinate to omni pixel coordinate lookup table.
 
@@ -72,13 +72,12 @@ In practice the rays will be the same for a set of perspective image parameters.
   \label{fig:omni_images}
 \end{figure}
 
-The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is fairly trivial, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. %TODO long sentence
-
+The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is convenient, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. %TODO long sentence
 
 \section{Online validation of extrinsic calibration}
 \label{sec:verification_tool}
 
-Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilised.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then by reprojected into the omni camera image using the extrinsic calibration.
+Using the stereo camera, it is possible to verify the extrinsic calibration without the use of the checkerboard.  In this case, the baseline of the stereo camera determined from stereo calibration is assumed to be correct and utilised.  Points matched between left and right stereo frames may be triangulated to find their 3D positions.  These points can then be reprojected into the omni camera image using the extrinsic calibration.
 
 \begin{figure}[h!]
   \centering
@@ -87,7 +86,7 @@ Using the stereo camera, it is possible to verify the extrinsic calibration with
   \label{fig:circ_matches}
 \end{figure}
 
-A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  These points are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a framerate of about 1-2Hz (low framerate due to feature extraction and circular matching).  Nevertheless it is useful in verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
+A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  These points are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a framerate of about 1-2Hz (low framerate due to feature extraction and circular matching).  This is useful for verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
 
 This tool also serves a second purpose; mainly to log all of 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.  This calibration uses the known geometry of the stereo camera as opposed to known geometry of the checkerboard.  This means that any feature matched in both stereo frames and omni camera frame can be used as a data point for calibration.
 
@@ -99,11 +98,10 @@ In the setup used, the tool described in Secion \ref{sec:ros_tool} did not produ
 A simple g2o graph was implemented to perform the extrinsic refinement optimization as mentioned in Section \ref{sec:verification_tool}.  2D and 3D points are represented as fixed vertices.  The pose to transform from stereo to omni frame is an SE(3) pose, in this case, one of the inbuilt g2o types.  A single edge joins a 2D and 3D point, along with the SE(3) calibration vertex, and calculates the reprojection error as follows:
 
 \begin{align}
- \bv e = \bv z_{om} - \hat{\bv z}( ^{om}\bv T_{st} \bv P_{st})
+ \bv e = \bv z_{OM} - \hat{\bv z}( ^{OM}\bv T_{ST} \bv P_{ST})
 \end{align}
 
-$\bv z_{om}$ represents 2D pixel coordinates of a single point in the omni image and $\hat{\bv z}$ projects a 3D world point to a 2D image point.  $\bv P_{st}$ is a 3D point in the stereo frame and $^{om}\bv T_{st}$, which transforms a point from stereo to omni frame, is the transform to optimize over.  A 3D visualization of the non linear calibration can be seen in Fig. \ref{fig:g2o_cal_vis}
-
+$\bv z_{OM}$ represents 2D pixel coordinates of a single point in the omni image and $\hat{\bv z}$ projects a 3D world point to a 2D image point.  $\bv P_{ST}$ is a 3D point in the stereo frame and $^{OM}\bv T_{ST}$, which transforms a point from stereo to omni frame, is the transform to optimize over.  A 3D visualization of the non linear calibration can be seen in Fig. \ref{fig:g2o_cal_vis}
 
 \begin{figure}[h!]
   \centering
@@ -114,22 +112,31 @@ $\bv z_{om}$ represents 2D pixel coordinates of a single point in the omni image
 
 To perform this calibration, data was collected using the online verfication tool.  An initial condition was obtained from the calibration produced from the tool mentioned in Section \ref{sec:ros_tool}.  After the non linear optimization converged, the new pose could be checked by the verfication tool.  A visualization of before and after optimization can be seen in Fig. \ref{fig:before_after_g2o}. 
 
-It was found that an important factor when using this calibration tool was to have points over the whole image space, and also with a wide variety of depth.  Initial calibrations showed excellent performance in terms of reprojection error on the data points used for calibration, however it was not stable for new points at different depths.  It was also noted that the geometry of the optimized pose was not representative of the real world pose between stereo and omni cameras.  
+It was found that an important factor when using this calibration tool was to have points over the whole image space, and also with a wide range of depth.  Initial calibrations showed excellent performance in terms of reprojection error on the data points used for calibration, however it was not stable for new points at different depths.  It was also noted that the geometry of the optimized pose was not representative of the real world pose between stereo and omni cameras.  
 
-Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection error results and the translation component of the pose using data collected in different areas.  'Indoors' denotes the dataset collected when the vehicle was inside, where all points were close. 'Outdoors' denotes data collected outdoors, namely the scene depicted in Fig. \ref{fig:before_after_g2o}, where all points were far away.  'Both' denotes both datasets combined together for optimization.
+Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection error results and the translation component of the pose between the cameras using data collected in different areas. 'Indoors' denotes the dataset collected when the vehicle was inside, where all points were close. 'Outdoors' denotes data collected outdoors, namely the scene depicted in Fig. \ref{fig:before_after_g2o}, where all points were far away.  'Both' denotes both datasets combined together for optimization.
 
-% \begin{center}
-%     \begin{tabular}{ |p{6cm}|p{3cm}|p{3cm}| }% p{5cm} |}
-%     \hline
-%     & \multicolumn{4}{r}{\bf{Average Reprojection error on dataset}}  \\
-%     & \bf{Indoors} & \bf{Outside} \\
-%     Optimized using Indoors & 0.425 & 87.050 \\
-%     Optimized using Outdoors & 13.82 & 0.634 \\
-%     Optimized using Both & 0.533 & 0.968 \\ 
-%     \end{tabular}
-%   \captionof{table} {Reprojection errors for extrinsic optimization using different datasets} 
-%   \label{tab:reprojection_error}
-% \end{center}
+For Table \ref{tab:geometry}, the rough measurement of the stereo camera position with respect to the omni camera reference frame was done with a ruler, and some axes were difficult to measure given the geometry of the test vehicle.  Therefore the accuracy is low, however it should be within about 10cm.
+
+\begin{table}[H]
+   \begin{tabular}{ p{6cm} r r }
+    \toprule
+    & \multicolumn{2}{r}{\bf{Average Reprojection error on dataset}}  \\
+    & \multicolumn{1}{c}{\hspace*{2cm}\bf{Indoors}} & \multicolumn{1}{c}{\hspace*{2cm}\bf{Outside}} \\
+    \midrule
+    Optimized using Indoors  & 0.42  & 87.05 \\
+    Optimized using Outdoors & 13.82 & 0.63 \\
+    Optimized using Both     & 0.53  & 0.96 \\ 
+    \bottomrule
+    \end{tabular}
+    \captionof{table} {Reprojection errors for extrinsic optimization using different datasets} 
+  \label{tab:reprojection_error}
+\end{table}
+
+% original accuracy:
+%Optimized using Indoors & 0.425 & 87.050 \\
+%Optimized using Outdoors & 13.82 & 0.634 \\
+%Optimized using Both & 0.533 & 0.968 \\ 
 
 \begin{table}[H]
     \begin{tabular}{ p{6cm} r r r} % p{5cm} |}
@@ -147,13 +154,16 @@ Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection err
   \label{tab:geometry}
 \end{table}
 
-These results show that a good calibration, both in terms of reprojection error and geometrical accuracy can be obtained by calibrating using data points of varying depth.
-Details of the exact calibration procedure used for evaluation can be found in Section \ref{chapter:system_setup}.
+Table \ref{tab:reprojection_error} shows that when only optimizing on indoors or outdoors datasets, the reprojection error was very high in the area not used for optimization.  It also shows very low reprojection error when optimizing using both datasets (less then 1.0 pixels).  This verifies that points over a wide range of distances is required for calibration, and it also shows an excellent overall calibration result.
+
+Table \ref{tab:geometry} reflects the same result as Table \ref{tab:reprojection_error}.  The geometry of 'Indoors' and 'Outdoors' are quite clearly wrong.  Comparing the rough measurement with the optimization of both datasets, all values are within 10cm, which is expected.
+
+These results show that a good calibration, both in terms of reprojection error and geometrical accuracy can be obtained by calibrating using data points over a wide range of depth. Details of the exact calibration procedure used for evaluation can be found in Section \ref{subsubsec:actual_calibation}.
 
 \begin{figure}[h!]
   \centering
     \includegraphics[width=1.0\textwidth]{chapters/images/verify_before_opt}
     \includegraphics[width=1.0\textwidth]{chapters/images/verify_after_opt}
-  \caption{Before and after non linear optimization of the extrinsic calibration.  In this example the average reprojection error was reduced from 12.340 to 0.634}
+  \caption{Before and after non linear optimization of the extrinsic calibration.  In this example the average reprojection error was reduced from 12.34 to 0.63}
   \label{fig:before_after_g2o}
 \end{figure}

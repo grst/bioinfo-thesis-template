@@ -85,22 +85,25 @@ First step is to calculate a non metric transformation using the two omni frames
 
 \subsubsection{Scale Offset Calculation}
 
-Points with metric scale are calculated using matches between left and right stereo frames.  These points are then matched to feature points from the omni camera images and compared with 3D non metric points returned from the pose estimation.  A scale offset is calculated per point as per Fig. \ref{fig:scale_offset}.  The pipeline that calculates a list of scale offsets is listed below, and represented in Fig. \ref{fig:scale_adjust_flowchart}.  This pipeline takes left, right and omni images as an input, and may be applied to either of the two loop closure frames separately.  In practice both frames are used and the scale list are concatenated together.
+Points with metric scale are calculated using matches between left and right stereo frames.  These points are then matched to feature points from the omni camera images and compared with 3D non metric points returned from the pose estimation.  A scale offset is calculated per point as follows:
 
-\begin{figure}[h]
+\begin{align}
   \centering
   \begin{align}
    S =
    \displaystyle\frac{
-   \left|\displaystyle\frac{\bv {MP}_{x}}{\bv P_{x}}\right| + 
-   \left|\displaystyle\frac{\bv {MP}_{y}}{\bv P_{y}}\right| + 
-   \left|\displaystyle\frac{\bv {MP}_{z}}{\bv P_{z}}\right|
+   \left|\displaystyle\frac{ {M}_{x}}{ P_{x}}\right| + 
+   \left|\displaystyle\frac{ {M}_{y}}{ P_{y}}\right| + 
+   \left|\displaystyle\frac{ {M}_{z}}{ P_{z}}\right|
    }
    {3}
   \end{align}
-  \caption{Scale calculation for a single point.  $\bv{MP}$ denotes the metric 3D point calculated from stereo and $\bv{P}$ denotes the non metric 3D point used in pose estimation}
-  \label{fig:scale_offset}
-\end{figure}
+  \label{eq:scale_offset}
+\end{align}
+
+Where $\bv{M}$ is a 3D metric point calculated from stereo, and $\bv{P}$ is a 3D non metric point triangulated based on the pose from the 5 point algorithm.  This formula calculates 3 separate scale offsets from 3 axes and averages them together to one scale offset. 
+
+The pipeline that calculates a list of scale offsets is listed below, and represented in Fig. \ref{fig:scale_adjust_flowchart}.  This pipeline takes left, right and omni images as an input, and may be applied to either of the two loop closure frames separately.  In practice both frames are used and the scale list are concatenated together.
 
 \begin{enumerate}
 \itemsep0em
@@ -109,9 +112,9 @@ Points with metric scale are calculated using matches between left and right ste
  \item For each 3D stereo point:
  \begin{enumerate}
    \item Ensure the matching omni point was an inlier used in pose estimation
-   \item Obtain the 3D non metric point triangulated from 5-point transform
-   \item Transform the stereo point to the omni camera frame from the extrinsic calibration $\bv P_{om} =  ^{om}\bv T_{st} \bv P_{st}$
-   \item Calculate scale offset as per formula \ref{fig:scale_offset} %TODO
+   \item Obtain the 3D non metric point triangulated from 5 point transform
+   \item Transform the stereo point to the omni camera frame from the extrinsic calibration $\bv P_{OM} =  ^{OM}\bv T_{ST} \bv P_{ST}$
+   \item Calculate scale offset as per formula \ref{eq:scale_offset} %TODO
    \item Add to list of offsets 
  \end{enumerate}
 \end{enumerate} 
@@ -167,7 +170,7 @@ A number of loop closure examples were evaluated with both the scale correction 
 
 The number of circular matches between the stereo camera and the omni camera of the other keyframe is typically very low.  Not only is matching occuring between different cameras, resulting in differing scale and intensities of feature patches, but there is also a larger translation between cameras. Whilst in the scale correction algorithm, these matches are only used for scale adjustment, in the p3p pipeline they are used for pose estimation.  Scale adjustment only requires 1 correspondence, however pose estimation requires 3.  There are likely to be outliers and therefore desirably a multiple of the minimal number of correspondences is required to determine a good pose.  Therefore the scale correction algorithm should perform better with a limited number of circular matches.
 
-The scale adjustment algorithm uses all the matches between two omni poses to calculate a transformation.  In practice this was found to to be typically well over 100 inliers for pose estimation.  Therefore this results in a highly accurate transformation.  On the other hand the p3p algorithm only uses the circular matches, which are often as little as 20 matches.  In addition, the rotation part of the transformation calculated by the 5-point algorithm does not need to be scaled, and is unaffected by any inaccuracy in the scale correction part.
+The scale adjustment algorithm uses all the matches between two omni poses to calculate a transformation.  In practice this was found to to be typically well over 100 inliers for pose estimation.  Therefore this results in a highly accurate transformation.  On the other hand the p3p algorithm only uses the circular matches, which are often as little as 20 matches.  In addition, the rotation part of the transformation calculated by the 5 point algorithm does not need to be scaled, and is unaffected by any inaccuracy in the scale correction part.
 
 \begin{figure}[h]
   \centering
@@ -194,7 +197,7 @@ Given this comparison, the scale correction algorithm was selected for use in th
 \end{figure}
 \section{Introducing loop closure constraints to the SLAM graph}
 
-Having obtained a transformation between frames, this needs to be integrated into the SLAM graph somehow.  This is not so trivial, especially given that the ScaViSLAM graph utilises the double window approach.  (Sec. \ref{sec:scavislam_graph}).  This section outlines how an edge was added to the graph.
+Having obtained a transformation between frames, this needs to be integrated into the SLAM graph.  This is not straightforward, especially given that the ScaViSLAM graph utilises the double window approach.  (Sec. \ref{sec:scavislam_graph}).  This section outlines how an edge was added to the graph.
 
 \subsection{Bundle Adjustment vs Pose-Pose edge}
 

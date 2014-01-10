@@ -291,9 +291,9 @@ This is a very straightforward approach to stereo triangulation.  In practice th
 
 %TODO lots and lots of stereo citations
 
-\subsection{Omni-directional Camera}
+\subsection{Omnidirectional Camera}
 
-The omni direction camera uses a lenses and mirrors to direct light from a 360$^{\circ}$ viewing angle onto one image plane.  The resulting image is in the shape as a donut, with blind spots in the middle and around the edges. Fig. \ref{fig:omni_donut}.
+The omnidirection camera uses a lenses and mirrors to direct light from a 360$^{\circ}$ viewing angle onto one image plane.  The resulting image is in the shape as a donut, with blind spots in the middle and around the edges. Fig. \ref{fig:omni_donut}.
 
 In order to project points from image to world and world to image coordiantes, the omnidirectional camera model described by Scaramuzza et al. was used and their Matlab toolbox was utilized for calibration. Mei and Rives also provide a different camera model for omnidirectional cameras.
 
@@ -302,7 +302,7 @@ Given the camera model, the image may be reprojected to a spherical image (for e
 \begin{figure}[h]
   \centering
     \includegraphics[width=0.4\textwidth]{chapters/images/donut}
-  \caption{Raw Omni-directional camera image}
+  \caption{Raw omnidirectional camera image}
   \label{fig:omni_donut}
 \end{figure}
 
@@ -462,13 +462,13 @@ In more recent times graph optimization approaches have become popular as not on
 
 \section{Visual SLAM}
 
-SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  In recent times, a plethora of VSLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.
+SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  Visual SLAM was first introduced by Davidson with his work using a monocular camera.  Since then, a plethora of VSLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.
 
 \subsection{Basic VSLAM pipeline}
 
 The following is a description of a basic pipeline for VSLAM.  Whilst the SLAM system utilised by this work as an underlying framework is somewhat more complex, this section shows how all the algorithms in Sections \ref{sec:camera_models}, \ref{sec:computer_vision}, and \ref{sec:bag_of_words} may be used together to form a complete SLAM pipeline.  The SLAM system actually used will be discussed in more detail in Section \ref{chapter:ScaViSLAM}
 
-The feature extraction in VSLAM involves using image feature detectors/descriptors (\ref{subsec:features}).  A feature point may then be considered as a single observation of a landmark.  This observation may be represented as a 3D ray from the current camera pose to the landmark by making use of the camera model (\ref{subsec:pinhole_cam}).  Multiple observations over multiple frames allow for multiple rays to intersect at this landmark, and therefore a 3D position of the landmark may be estimated using triangulation (\ref{subsec:point_triangulation}). In the case of a stereo camera, the 3D estimate more or less comes for free, as landmarks may be triangulated from left and right camera frame.
+The feature extraction in VSLAM involves using image feature detectors/descriptors (\ref{subsec:features}).  A feature point may then be considered as a single observation of a landmark.  This observation may be represented as a 3D ray from the current camera pose to the landmark by making use of the camera model (\ref{subsec:pinhole_cam}).  Multiple observations over multiple frames allow for multiple rays to intersect at this landmark, and therefore a 3D position of the landmark may be estimated using triangulation (\ref{subsec:point_triangulation}). In the case of a stereo camera, the 3D estimate more or less comes for free, as landmarks may be triangulated from left and right camera frame. (\ref{subsec:stereo_cam})
 
 The data association stage is performed by excectuting feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of initializing monocular SLAM (2D-2D correspondances), the p3p algorithm (\ref{subsec:p3p}) for tracking in monocular SLAM (2D-3D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transformation between frames. 
 
@@ -615,4 +615,12 @@ The error function $\bv e_k(\bv x_k, \bv z_k)$ measures how well the vertices fi
 
 \section{Related work}
 
-google some stuff!
+This work is concerned with stereo camera SLAM, omnidirectional camera SLAM, loop closure and multiple camera formulation from SLAM.  There has been considerable research effort in stereo SLAM. Nister \cite{nister_04} first proposed a visual odometry system using a stereo setup which could also be used with other sensors, such as GPS.
+
+%There are also a number of works on omnidirectional camera SLAM with....
+
+Whilst extensive research has been concentrated on SLAM with one camera type, there seems to be less interest at looking at multiple cameras for SLAM.  Pless\cite{pless_03}, along with Nayar\cite{nayar_01} investigated leveraging multiple cameras and derive a generalized camera model that allows multiple cameras to be used as one, however they did not specifically solve the pose estimation problem using this generalized camera model.  
+
+A solution to the pose estimation problem using generalized camera models was proposed by Stewenius et. al. \cite{stewenius_05} using 6 correspondance points.  Coupling this solver with RANSAC, they were are to obtain good results.  However the limitation of their approach is that centers of projection cannot be collinear. This limitation excludes all two camera systems.
+
+Frahm\cite{frahm_04} was able to proposed a solution for 6 DoF pose estimation with a multicam setup not using a generalized camera model, which relies on overlapping field of view between cameras. Oskiper et. al.\cite{oskiper_07} provided an interesting approach by developing a SLAM system using a pair of stereo cameras, one forward and one backward facing with an IMU.  However this system was designed only as a high accuracy visual odometry frontend for a SLAM system.  Clipp et. al.\cite{clipp_09} provided a solution for 6 degree of freedom pose estimation of multiple, non overlapping cameras.  This approach relied on certain motion constraints and degrades to 5 degrees of freedom if the motion is degenerate.  Lee et. al.\cite{lee_13} presented a SLAM system in the context of self-driving cars, designed for a close-to-market multi-camera system.  In this case they model the multicam system as a generalized camera, as per \cite{pless_03} and apply the non-holonomic motion constraint of the car to obtain a minimal solution to the pose estimation problem.

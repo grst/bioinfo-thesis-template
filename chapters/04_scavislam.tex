@@ -1,9 +1,9 @@
 \chapter{SLAM Framework}
 \label{chapter:ScaViSLAM}
 
-This chapter will describe the underlying SLAM system used for this work, \\ \mbox{ScaViSLAM}.  \mbox{ScaViSLAM}, (Scalable Visual SLAM) is a stereo visual SLAM algorithm designed to do online constant time SLAM. It achieves this by using a SLAM graph, and rather than optimizing over the whole graph, it optimizes using a 'double window' approach to select which parts of the graph to optimize.  This consists of an in 'inner window', where a bundle adjustment over all poses and landmarks is performed, and an outer window, where an optimization over only keyframes and keyframe-keyframe edges is done. The outer and inner window are dynamically calculated by the algorithm during operation.  This double-window approach allows for only a subsection of the graph to be optimized each step, thus solving in constant time, whilst still allowing for the entire graph to remain consistent.
+This chapter will describe the underlying SLAM system used for this work, \\ \mbox{ScaViSLAM}.  \mbox{ScaViSLAM}, (Scalable Visual SLAM) is a stereo visual SLAM system designed to do online constant time SLAM. It achieves this by using a SLAM graph, and rather than optimizing over the whole graph, it optimizes using a 'double window' approach to select which parts of the graph to optimize.  This consists of an 'inner window', where a bundle adjustment over all poses and landmarks is performed, and an outer window, where an optimization over only keyframes and keyframe-keyframe edges is done. The outer and inner window are dynamically calculated by the algorithm during operation.  This double-window approach allows for only a subsection of the graph to be optimized each step, thus solving in constant time, whilst still allowing for the entire graph to remain consistent.
 
-The inner workings of ScaViSLAM may be broken up into three different modules, each of which runs in a seperate thread; the stereo frontend, SLAM graph backend and place recognition. These modules will be discussed here. In addition to the modules, the operation of the SLAM graph will be expanded on, as not only is this the main novelty of the ScaViSLAM algorithm, but is also very important in the context of the contribution of this work. The main interface between the algorithm presented in this work and ScaViSLAM system is by adding information to the SLAM graph.
+The inner workings of ScaViSLAM may be broken up into three different modules, each of which runs in a separate thread; stereo frontend, SLAM graph backend and place recognition. These modules will be discussed here. In addition to the modules, the operation of the SLAM graph will be expanded on, as not only is this the main novelty of ScaViSLAM, but is also very important in the context of the contribution of this work. The main interface between the pipeline presented in this work and ScaViSLAM is by adding information to the SLAM graph.
 
 \begin{figure}[h!]
   \centering
@@ -21,7 +21,7 @@ The frontend is responsible for calculating visual odometry.  It also finds land
 
 %TODO: brief/fast citation
 
-To calculate an initial transformation between frames, first a disparity image is calculated using dense stereo matching, then dense stereo tracking is performed.  Both of these operations are done on the GPU.  After an initial transformation has been estimated, landmarks are matched used guided BRIEF (citation) at FAST (citation) corners locations.  Matching is done on multiple image pyramid levels to allow features of various scales. Selection of landmarks will be discussed in the following section.  Image patches of landmarks are warped into the current perspective by using the current transformation to improve matching. Having matched enough points against current and previous keyframes, a refined pose is calculated by minimising reprojection error over all point correspondences.
+To calculate an initial transformation between frames, first a disparity image is calculated using dense stereo matching,(cite) then dense stereo tracking is performed.  Both of these operations are done on the GPU.  After an initial transformation has been estimated, landmarks are matched used guided BRIEF (citation) at FAST (citation) corners locations.  Matching is done on multiple image pyramid levels to allow features of various scales. Selection of landmarks will be discussed in the following section.  Image patches of landmarks are warped into the current perspective by using the current transformation to improve matching. Having matched enough points against current and previous keyframes, a refined pose is calculated by minimising reprojection error over all point correspondences.
 
 \subsection{Tracking points}
 
@@ -43,14 +43,14 @@ New keyframes are added either when the number of shared observations drops belo
 \section{Backend}
 \label{sec:scavislam_backend}
 
-The backend is responsible for maintaining the entire SLAM graph, and thus holds internally its own representation of the whole graph.  It provides interfaces for other modules to add information to the graph. It also acts as a wrapper for the graph solving library, in this case g2o. As the graph is designed to run in constant time, the backend has been designed to execute at a relatively fast rate (insert number here) so that the graph may be constantly solved during operation.
+The backend is responsible for maintaining the entire SLAM graph, and thus holds internally its own representation of the whole graph.  It provides interfaces for other modules to add information to the graph, such as the frontend with new keyframes or the place recognizer with new large loop closures. It is also responsible for solving the graph, in this case by using the g2o library. As the graph is designed to run in constant time, the backend has been designed to execute at a relatively fast rate (insert number here) so that the graph may be constantly solved during operation.
 %TODO: determine backend speed
 
 %\subsection{Contains the entire graph (not in g2o format)}
 %\subsection{Performs some bundle adjustment}
 %\subsection{Acts as a wrapper for g2o}
 
-The backend also serves as a wrapper for the graph optimizer.  It contains data structures to represent all keyframes, keyframe edges, landmarks and landmark observations.  For each optimization, only the necessary keyframes and edges are copied into the optimizer.  After optimization has been performed, the optimized vertices are copied back to ScaViSLAM representation of the graph, and the optimizer object is discarded.
+The backend runs optimization whenever new information is added to the graph.  It contains data structures to represent all keyframes, keyframe edges, landmarks and landmark observations.  For each optimization, only the necessary keyframes and edges are copied into the optimizer.  After optimization has been performed, the optimized vertices are copied back to ScaViSLAM representation of the graph, and the optimizer object is discarded.
 
 \section{Place Recognition}
 \label{sec:scavislam_place_recog}
@@ -61,7 +61,7 @@ The place recognition module is responsible for detecting 'large loop closures' 
 
 One solution to finding large loop closures between keyframes would be to compare every keyframe with every other keyframe generated.  However this would result in a time complexity of $O(n^2)$ for $n$ frames.  This does clearly not scale well to large maps.
 
-A better solution is to use a place recognition algorithm, which given a collection of images of various locations, attempts to match a query frame to an existing location, or say if the frame is a completely new location, without searching through the entire image space.  There has been considerable research in place recognition in recent times (cite a bunch of papers).  In ScaViSLAM the bag of words approach was employed.
+A better solution is to use an appearance based place recognition algorithm, which given a collection of images of various locations, attempts to match a query frame to an existing location, without searching through the entire image space.  For more on place recognition, see Section \ref{sec:bag_of_words}.  In ScaViSLAM the bag of words approach was employed.
 
 %TODO: read about bag of words and summarize
 
@@ -72,16 +72,16 @@ The existing implementation of bag of words in ScaViSLAM generates potential mat
 
 The geometry check serves two purposes; one is to filter out false positives as generated by the place recognition module.  The bag of words implementation in ScaViSLAM is rather simplistic and as a result outputs many false positives.  The second purpose is to generate an estimation of the pose between keyframes so it may be integrated into the SLAM graph.  
 
-To do this check, features are extracted from both frames and projected to 3D points using stereo information.  3D-3D correspondences are obtained from feature matching between frames and RANSAC is used to find an optimal transformation.  If enough inliers are returned then the edge may be added to the graph.  The number of inliers may be used to weight the strength of this pose-pose graph constraint.
+To do this check, features are extracted from both frames and projected to 3D points using stereo information.  3D-3D correspondences are obtained from feature matching between frames and a 6 DoF solver coupled with RANSAC is used to find an optimal transformation.  If enough inliers are returned then the edge may be added to the graph.  The number of inliers may be used to weight the strength of this pose-pose graph constraint.
 
 \section{ScaViSLAM Graph}
 \label{sec:scavislam_graph}
 
 \subsection{Graph description}
 
-The specific SLAM graph implementation will be covered here.  The graph may be split up into two parts, an inner and an outer window.  These will be described first separately, and following how they work together.
+The specific SLAM graph implementation will be covered here.  The graph may be split up into two parts, an inner and an outer window.  These will be described first separately, and followed by how they work together.
 
-The slam solver used by ScaViSLAM is g2o.  g2o is c++ framework for solving optimization of non-linear least squares problems that can be described by a hyper-graph.
+The SLAM solver used by ScaViSLAM is g2o.  g2o is c++ framework for solving optimization of non-linear least squares problems that can be described by a hyper-graph.  (Section \ref{subsec:graph_slam})
 
 \subsubsection{Inner Window}
 
@@ -89,40 +89,39 @@ The inner window of the graph does a bundle adjustment over keyframe poses as we
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.5\textwidth]{chapters/images/inner_window}
-  \caption{Inner window}
+    \includegraphics[width=0.6\textwidth]{chapters/images/inner_window}
+  \caption{Simplified graph representation of the inner window.  $\bv P_i$ are poses, $\bv L_i$ are landmarks, and $\bv {ob}_i$ are observation edges}
   \label{fig:inner_window}
 \end{figure}
 
 $\bv P_i$ represent 3D camera poses of keyframes $SE(3)$.  $\bv L_i$ is a landmark position and is represented as a 3D point $\mathbb{R}^3$ in the frame of the keyframe where it was first recorded.  This will be referred to as that point's anchor keyframe.  It it important to note that the landmark is not represented in world coordinates, and therefore its position is also dependent on the anchor keyframe vertex state.
 
-The edges which represent observations of landmarks are multi edges between the landmark, the anchor keyframe and the pose where it is observed from.  This also means the first observation of a landmark will contain two connections to the anchor keyframe. There error function in this case is a reprojection error is calculated as follows;
+$\bv {ob}_i$ represents the observations of landmarks.  They are multi edges between the landmark, the anchor keyframe and the pose where it is observed from.  This also means the first observation of a landmark will contain two connections to the anchor keyframe. The error function in this case is a reprojection error ans is calculated as follows;
 
 %TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
 \begin{align}
- \bv e = \bv z_o - \hat{\bv z}( ^{o}\bv T_w \ ^w \bv T_{a} \ \bv L_{a})
+ \bv e = \bv z_O - \hat{\bv z}( ^{O}\bv T_W \ ^W \bv T_{A} \ \bv L_{A})
 \end{align}
 
-$\bv z_o$ is the edge constraint stored as the pixel coordinates of the landmark in left and right frame seen from the observation  frame. $\bv L_{a}$ is the landmark in the anchor frame (landmark vertex).  $^w \bv T_{a}$ is the transform from the anchor keyframe to world frame (anchor keyframe vertex), and $^{o}\bv T_w$ is the transformation from the world frame to the observation keyframe -  where this particular edge was recorded.  The $\hat{\bv z}$ function uses intrinsic camera calibration parameters and projects a 3D point into image pixel coordinates.
+$\bv z_O$ is the edge constraint stored as the pixel coordinates of the landmark in left and right frame seen from the observation  frame. $\bv L_{A}$ is the landmark in the anchor frame (landmark vertex).  $^W \bv T_{A}$ is the transform from the anchor keyframe to world frame (anchor keyframe vertex), and $^{O}\bv T_w$ is the transformation from the world frame to the observation keyframe -  where this particular edge was recorded.  The $\hat{\bv z}$ function uses intrinsic camera calibration parameters and projects a 3D point into image pixel coordinates.
 
 \subsection{Outer Window}
 
 Unlike the bundle adjustment of the inner window, the outer window is a simple pose graph optimization.  It contains keyframe poses as in the inner window, and keyframe edges, which describe a transformation from one keyframe to another.  They are binary edges, only relating two poses at most.  The error function is then defined as follows:
 
-%TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
 \begin{align}
- v_{ab} &=  \log(^{w}\bv T_{a} \ ^{a} \bv T_{b} \ ^{b} \bv T_{w}) \\
- \bv e &= v_{ab}^T \ \Lambda_{ab} \ v_{ab}
+ v_{AB} &=  \log(^{W}\bv T_{A} \ ^{A} \bv T_{B} \ ^{B} \bv T_{W}) \\
+ \bv e &= v_{AB}^T \ \Lambda_{AB} \ v_{AB}
 \end{align}
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.5\textwidth]{chapters/images/outer_window}
-  \caption{Outer window}
+    \includegraphics[width=0.6\textwidth]{chapters/images/outer_window}
+  \caption{Simplified graph representation of the outer window.  $\bv P_i$ are poses, connecting lines are SE(3) edges}
   \label{fig:outer_window}
 \end{figure}
 
-$^{w}\bv T_{a}$ and $^{b} \bv T_{w}$ are obtained from the vertex states, while $^{a} \bv T_{b}$ is the edge measurement.  The logarithmic function is a lie group mapping that maps the transformation to a 6D vector. (Sec \ref{sec:lie_group})  $\Lambda$ is the information matrix (covariance matrix? which one?) of the edge.  The rotational part is estimated using the number of shared observations.  The translational part is estimated using the average scene depth, i.e. if all points are far away, the depth estimation will be poor.
+$^{W}\bv T_{A}$ and $^{B} \bv T_{W}$ are obtained from the vertex states, while $^{A} \bv T_{B}$ is the edge measurement.  The logarithmic function is a lie group mapping that maps the transformation to a 6D vector. (Section \ref{sec:lie_group})  $\Lambda$ is the information matrix of the edge.  The rotational part is estimated using the number of shared observations.  The translational part is estimated using the average scene depth, that is, if all points are far away, the depth estimation will be poor.
 %TODO: covariance matrix vs information matrix
 
 \subsection{Window selection}
@@ -138,13 +137,13 @@ To calculate the double window, the current frame is first selected, and then a 
   \label{fig:double_window}
 \end{figure}
 
-All of the non border poses in the inner window are have only point-pose constraints, the border poses have both pose-pose constraints and point-pose constraints, and the rest of the outer window has only pose-pose constraints.  This is illustrated in fig \ref{fig:double_window}.  
+All of the non border poses in the inner window have only point-pose constraints, the border poses have both pose-pose constraints and point-pose constraints, and the rest of the outer window has only pose-pose constraints.  This is illustrated in Fig. \ref{fig:double_window}.  
 
 This graph design allows for the inner window to calculate locally very accurate poses, whilst globally remaining consistent and still run in real time.
 
 \subsubsection{Readjustment of double window after a loop closure}
 %TODO: move this section to double window
-As mentioned in section \ref{subsec:geometry_check}, pose-pose constraints are added to the graph in the event of a large loop closure. Due to the double window approach, simply adding the pose constraint will not close the loop, as pose edges are not considered in the inner window.  Instead, the current keyframe is initialized to its new position based on the loop closure edge, and then shared observations between current and old keyframes are searched for.  If successful, The landmarks are merged and the old keyframes are added to the inner window.  Optimization is then executed with the new double window.  The inner window pulls old and new keyframes together, while the outer window propagates error throughout the rest of the graph.
+As mentioned in section \ref{subsec:geometry_check}, pose-pose constraints are added to the graph in the event of a large loop closure. Due to the double window approach, simply adding the pose constraint will not close the loop, as pose edges are not considered in the inner window.  Instead, the current keyframe is initialized to its new position based on the loop closure edge, and then shared observations between current and old keyframes are searched for.  If successful, the landmarks are merged and the old keyframes are added to the inner window.  Optimization is then executed with the new double window.  The inner window pulls old and new keyframes together, while the outer window propagates error throughout the rest of the graph.
 
 
 %\begin{itemize}
