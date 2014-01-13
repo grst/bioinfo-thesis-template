@@ -47,9 +47,9 @@ The AVT camera is a generic camera, not specifically designed for omnidirectiona
 
 Theory behind all the algorithms used is explained in Chapter \ref{chapter:extrinsic_calibration}, this section will describe the procedure undertaken.  
 
-Intrnsic calibration of the stereo camera was performed using the ROS package camera\_calibration\footnote{\url{http://wiki.ros.org/camera_calibration}}.  Intrinsic calibration of the omni camera was done using tools from an internal Bosch vision library.
+Intrinsic calibration of the stereo camera was performed using the ROS package camera\_calibration\footnote{\url{http://wiki.ros.org/camera_calibration}}.  Intrinsic calibration of the omni camera was done using tools from an internal Bosch vision library.
 
-Having calibrated the intrisic parameters, the first step of extrinsic calibration was using the ROS calibration tool described in Section \ref{sec:ros_tool}.  This tool requires no initial condition to determine a calibration.  This was performed indoor with a checkerboard, but produced poor results because of the limited room to move the checkerboard around.
+Having calibrated the intrinsic parameters, the first step of extrinsic calibration was using the ROS calibration tool described in Section \ref{sec:ros_tool}.  This tool requires no initial condition to determine a calibration.  This was performed indoor with a checkerboard, but produced poor results because of the limited room to move the checkerboard around.
 
 The calibration from the ROS calibration was used as an initial condition for the non linear optimization refinement. (See Section \ref{sec:g2o_extrinsic_cal}).  Video data was recorded outside using the online verification tool \ref{sec:verification_tool}.  In order to collect points of different depth, a textured surface was held in front of the camera at close range and moved slowly away.  Being outside, many distant points were also recorded.  The non linear extrinsic refinement tool was then run to obtain a refined calibration.   
 

@@ -27,7 +27,7 @@ Other robotics applications, such as robotic lawn movers, farming robots or fork
 
 So despite the advances in localization technology, there is still a need for highly accurate, reliable localization.  One avenue to explore to tackle this need is localization with cameras.  Cameras are inexpensive and small.  There already exists a vast number of localization algorithms using cameras, as well as a strong research community.  Nevertheless cameras do have a number of clear disadvantages; input data is highly variant on lighting conditions, portions of the field of view may be easily occluded, and the vast amount of data requires significant processing to be interpreted correctly.
 
-A number of different types of cameras exist, each having their own advantages and disadvantages.  Rather selecting one type of camera and attempting to overcome its shortfalls, a more sound strategy would be to utilise multiple cameras simultaneously, in order to improve accuracy, robustness and reliability.  This technique of leveraging multiple sensory sources to find complimentary qualities is called sensor fusion.  Typical examples of sensor pairs include odometry/inertial, laser/inertial, and inertial/visual.  In this thesis the idea of fusing different camera types for visual localization will be explored.
+A number of different types of cameras exist, each having their own advantages and disadvantages.  Rather than selecting one type of camera and attempting to overcome its shortfalls, a more sound strategy would be to utilise multiple cameras simultaneously, in order to improve accuracy, robustness and reliability.  This technique of leveraging multiple sensory sources to find complimentary qualities is called sensor fusion.  Typical examples of sensor pairs include odometry/inertial, laser/inertial, and inertial/visual.  In this thesis the idea of fusing different camera types for visual localization will be explored.
 
 \section{Problem Statement}
 
@@ -39,4 +39,4 @@ This thesis is split up into chapters.  Chapter 2 will cover all the background 
 
 The SLAM system selected as the underlying framework for the camera fusion will be extensively explained in chapter 4.  Chapter 5 contains the first main contribution of this work; how to perform a highly accurate extrinsic calibration between stereo and omni cameras such that they may be used together.  Then, in chapter 6 the selected approach for camera fusion will be broken down in detail.  Having described the inner workings of the algorithms and system pipeline, chapter 7 will explore the system architecture developed to support the entire system.
 
-Finally chapter 8 will provide an extensive evaluation of the system, and these findings will be summarized in chapter 9.
+Finally, chapter 8 will provide an extensive evaluation of the system, and these findings will be summarized in chapter 9.

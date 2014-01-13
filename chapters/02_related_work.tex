@@ -57,7 +57,7 @@ Composition is associative but not commutive.  The selected notation helps to di
 \section{Lie Groups}
 \label{sec:lie_group}
 
-A Lie group $G$ is a set of elements that must satisfy a number of axioms, mainly; the group must be closed under its binary operation, it must be associative, it must have a unique identity element and each element must have a unique inverse.  A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.
+A Lie group $G$ is a set of elements that must satisfy a number of axioms: the group must be closed under its binary operation; it must be associative; it must have a unique identity element and each element must have a unique inverse. A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.
 %TODO add reference
 %link to copy formulas:
 %https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&ved=0CC4QFjAA&url=http%3A%2F%2Fwww.ai.sri.com%2F~agrawal%2Ficcv05.pdf&ei=tzWQUrW_JYqjrgGgyoHgBQ&usg=AFQjCNEf5gEIFxkeoWnymDixktsxuHRilQ&sig2=94gwoKQvghQEIh_nLeAZ8A&bvm=bv.56988011,d.aWM
@@ -159,7 +159,7 @@ The pinhole camera model assumes the camera to be a sealed box with a pinhole ap
   \label{fig:pinhole_normal}
 \end{figure}
 
-For all intensive purposes, this model can be redrawn as in Fig. \ref{fig:pinhole_normal}. The image plane is inverted and shown reflected in front the of the camera.  In addition it is helpful to express the focal length differently.  Image plane coordinates need to be converted to sensor coordinates (that is, pixel coordinates; u,v).  This can be determined given the image sensor size and its resolution.  As this is linear operation, this conversion may be applied to the metric focal length and thus focal length expressed in pixel units.  Given Fig. \ref{fig:pinhole_normal} and the focal length expressed in pixel units, image coordinates and world coordinates may then be related as follows: 
+For all intents and purposes, this model can be redrawn as in Fig. \ref{fig:pinhole_normal}. The image plane is inverted and shown reflected in front the of the camera.  In addition it is helpful to express the focal length differently.  Image plane coordinates need to be converted to sensor coordinates (that is, pixel coordinates; u,v).  This can be determined given the image sensor size and its resolution.  As this is linear operation, this conversion may be applied to the metric focal length and thus focal length expressed in pixel units.  Given Fig. \ref{fig:pinhole_normal} and the focal length expressed in pixel units, image coordinates and world coordinates may then be related as follows: 
 
 \begin{align}
   \dfrac{u}{f_x} = \dfrac{x}{z}
@@ -320,7 +320,7 @@ Given the camera model, the image may be reprojected to a spherical image (for e
 \subsection{Feature detection and description}
 \label{subsec:features}
 
-Feature detection is the process of finding local regions of an image which are distinct and parameterizing them with image coordinates.  The output of a feature detection algorithm is a subset of the image, this could be individual points, edges, curvers or connected regions.  In this work only feature point detection is used, which means parameterizing a feature with individual image coordinates.
+Feature detection is the process of finding local regions of an image which are distinct and parameterizing them with image coordinates.  The output of a feature detection algorithm is a subset of the image. This could be individual points, edges, curvers or connected regions. In this work only feature point detection is used, which means parameterizing a feature with individual image coordinates.
 
 Once a feature point has been determined, a descriptor for the identified region needs to be defined, such that it can be reidentified.  This is called feature description.  A naive approach would be to simply use a small image patch around the area of the feature point, however this description would be highly dependant on the viewpoint of the camera, as well as lighting conditions, which makes it not very useful for reidentification.
 
@@ -342,7 +342,7 @@ This process varies greatly depending on the feature descriptor selected, as des
 
 Binary type descriptors on the other hand, for example ORB or BRIEF, encode the descriptor patch as intensity values and are designed to be matched by performing binary operations between the two patches for maximal computational efficiency.
 
-SIFTGPU also has feature matching funtions and is used in this work.
+SIFTGPU also has feature matching functions and is used in this work.
 
 \subsection{Reprojection Error}
 \label{subsec:reprojection_error}
@@ -367,7 +367,7 @@ Random Sample Consensus (RANSAC) is an iterative method for determining paramete
  \item (Optional) Refit the model using all inliers
 \end{enumerate}
 
-This algorithm can be improved on by providing some logic to finish iterating early, for instance, if number of inliers if above some threshold or total error is below some threshold.
+This algorithm can be improved on by providing some logic to finish iterating early, for instance, if number of inliers is above some threshold or total error is below some threshold.
 
 A simple example of linear regression is illustrated in Fig. \ref{fig:RANSAC}.  Two points are selected at random to define the equation of a line.  Other points are tested for being inliers or outliers by thresholding on the distance measured between them and the line.  This process is repeated and the model with the maximum number of inliers is kept at the end.
 
@@ -423,7 +423,7 @@ Algorithms have been proposed by Umeyama and Horn to solve this.  Both take at l
 
 Given a set of images, place recognition is the task of 'recognizing' if a new image matches to one or more images in the set.  Unlike the geometry estimation algorithms, this returns a simple true false, or probability match, rather than a frame to frame transformation.  Often for place recognition a wide range of differing images is selected as the set to 'train' on, and by detecting if a new image matches an existing one, then the location of the camera that took the new image should be roughly close to that of the matched image in the training set.
 
-The bag of words approach uses clustering of features in descriptor space.  This is technique taken from object classification.  Similar features are grouped together and put into different bins to form a histogram which describes the entire image.  These histograms may be represented as vectors and compared using vector distance.  In addition many histograms can be stored in a tree structure such as a KD tree to reduce searching time.
+The bag of words approach uses clustering of features in descriptor space.  This technique taken from object classification.  Similar features are grouped together and put into different bins to form a histogram which describes the entire image.  These histograms may be represented as vectors and compared using vector distance.  In addition many histograms can be stored in a tree structure such as a KD tree to reduce searching time.
 %TODO cite kdtree
 
 More sophistiacted approaches exist, including FABMAP or using a vocabulary tree approach.  There has also been some work in address invariance to lighting conditions, for example DIRD place recognition.  This library uses a new feature descriptor that has been learnt especially for place recognition with lighting condition invariance in mind.
@@ -472,7 +472,7 @@ The feature extraction in VSLAM involves using image feature detectors/descripto
 
 The data association stage is performed by excectuting feature matching across different camera frames. Pose estimation is commonly achieved by utilising the RANSAC algorithm (\ref{subsec:RANSAC}) This can be coupled with the 5 point algorithm (\ref{subsec:5point}) in the case of initializing monocular SLAM (2D-2D correspondances), the p3p algorithm (\ref{subsec:p3p}) for tracking in monocular SLAM (2D-3D correspondances), or with Umeyama/Horn (\ref{subsec:horn}) for stereo or RGBD, (3D-3D correspondances). The model in this case is the 6 DoF transformation between frames. 
 
-The error may be either euclidean distance between points or reprojection error (\ref{subsec:reprojection_error}) after the all points have been transformed to the same reference frame for comparison by applying the transformation. Eq. \ref{eq:ransac_error} provides an example using euclidean distance as an error function for points with estimated 3D locations.
+The error may be either euclidean distance between points or reprojection error (\ref{subsec:reprojection_error}) after all the points have been transformed to the same reference frame for comparison by applying the transformation. Eq. \ref{eq:ransac_error} provides an example using euclidean distance as an error function for points with estimated 3D locations.
 
 \begin{figure}[h]
  \centering
@@ -623,4 +623,4 @@ Whilst extensive research has been concentrated on SLAM with one camera type, th
 
 A solution to the pose estimation problem using generalized camera models was proposed by Stewenius et. al. \cite{stewenius_05} using 6 correspondance points.  Coupling this solver with RANSAC, they were are to obtain good results.  However the limitation of their approach is that centers of projection cannot be collinear. This limitation excludes all two camera systems.
 
-Frahm\cite{frahm_04} was able to proposed a solution for 6 DoF pose estimation with a multicam setup not using a generalized camera model, which relies on overlapping field of view between cameras. Oskiper et. al.\cite{oskiper_07} provided an interesting approach by developing a SLAM system using a pair of stereo cameras, one forward and one backward facing with an IMU.  However this system was designed only as a high accuracy visual odometry frontend for a SLAM system.  Clipp et. al.\cite{clipp_09} provided a solution for 6 degree of freedom pose estimation of multiple, non overlapping cameras.  This approach relied on certain motion constraints and degrades to 5 degrees of freedom if the motion is degenerate.  Lee et. al.\cite{lee_13} presented a SLAM system in the context of self-driving cars, designed for a close-to-market multi-camera system.  In this case they model the multicam system as a generalized camera, as per \cite{pless_03} and apply the non-holonomic motion constraint of the car to obtain a minimal solution to the pose estimation problem.
+Frahm\cite{frahm_04} proposed a solution for 6 DoF pose estimation with a multicam setup not using a generalized camera model, which relies on overlapping field of view between cameras. Oskiper et. al.\cite{oskiper_07} provided an interesting approach by developing a SLAM system using a pair of stereo cameras, one forward and one backward facing with an IMU.  However this system was designed only as a high accuracy visual odometry frontend for a SLAM system.  Clipp et. al.\cite{clipp_09} provided a solution for 6 degree of freedom pose estimation of multiple, non overlapping cameras.  This approach relied on certain motion constraints and degrades to 5 degrees of freedom if the motion is degenerate.  Lee et. al.\cite{lee_13} presented a SLAM system in the context of self-driving cars, designed for a close-to-market multi-camera system.  In this case they model the multicam system as a generalized camera, as per \cite{pless_03} and apply the non-holonomic motion constraint of the car to obtain a minimal solution to the pose estimation problem.

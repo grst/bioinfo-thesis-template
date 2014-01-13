@@ -96,14 +96,14 @@ The inner window of the graph does a bundle adjustment over keyframe poses as we
 
 $\bv P_i$ represent 3D camera poses of keyframes $SE(3)$.  $\bv L_i$ is a landmark position and is represented as a 3D point $\mathbb{R}^3$ in the frame of the keyframe where it was first recorded.  This will be referred to as that point's anchor keyframe.  It it important to note that the landmark is not represented in world coordinates, and therefore its position is also dependent on the anchor keyframe vertex state.
 
-$\bv {ob}_i$ represents the observations of landmarks.  They are multi edges between the landmark, the anchor keyframe and the pose where it is observed from.  This also means the first observation of a landmark will contain two connections to the anchor keyframe. The error function in this case is a reprojection error ans is calculated as follows;
+$\bv {ob}_i$ represents the observations of landmarks.  They are multi edges between the landmark, the anchor keyframe and the pose where it is observed from.  This also means the first observation of a landmark will contain two connections to the anchor keyframe. The error function in this case is a reprojection error and is calculated as follows;
 
 %TODO: FIX THIS NOTATION.  TERRIBLE TERRIBLE
 \begin{align}
  \bv e = \bv z_O - \hat{\bv z}( ^{O}\bv T_W \ ^W \bv T_{A} \ \bv L_{A})
 \end{align}
 
-$\bv z_O$ is the edge constraint stored as the pixel coordinates of the landmark in left and right frame seen from the observation  frame. $\bv L_{A}$ is the landmark in the anchor frame (landmark vertex).  $^W \bv T_{A}$ is the transform from the anchor keyframe to world frame (anchor keyframe vertex), and $^{O}\bv T_w$ is the transformation from the world frame to the observation keyframe -  where this particular edge was recorded.  The $\hat{\bv z}$ function uses intrinsic camera calibration parameters and projects a 3D point into image pixel coordinates.
+$\bv z_O$ is the edge constraint stored as the pixel coordinates of the landmark in left and right frame seen from the observation  frame. $\bv L_{A}$ is the landmark in the anchor frame (landmark vertex).  $^W \bv T_{A}$ is the transformation from the anchor keyframe to world frame (anchor keyframe vertex), and $^{O}\bv T_w$ is the transformation from the world frame to the observation keyframe -  where this particular edge was recorded.  The $\hat{\bv z}$ function uses intrinsic camera calibration parameters and projects a 3D point into image pixel coordinates.
 
 \subsection{Outer Window}
 
@@ -126,7 +126,7 @@ $^{W}\bv T_{A}$ and $^{B} \bv T_{W}$ are obtained from the vertex states, while 
 
 \subsection{Window selection}
 
-The idea of the double window approach is to obtain high accuracy locally by using bundle adjustment, whilst still have a globally consistent graph that optimizes in real time.  This is achieved by 'marginalizing' the bundle adjustment to a pose graph that can optimize much faster and thus allow optimization over a large map.
+The idea of the double window approach is to obtain high accuracy locally by using bundle adjustment, whilst still having a globally consistent graph that optimizes in real time.  This is achieved by 'marginalizing' the bundle adjustment to a pose graph that can optimize much faster and thus allow optimization over a large map.
 
 To calculate the double window, the current frame is first selected, and then a uniform cost search is performed over all neighbours of the current frame, selecting the frames with the highest number of shared observations first. The size of the inner window and outer window are parameterizable, denoted $W_1$ and $W_2$. The search is performed until $W_1$ + $W_2$ vertices are found, adding the first $W_1$ frames to the inner window and the rest to the outer window. Then all points visible from inner window frames are added to the inner window.  
 
