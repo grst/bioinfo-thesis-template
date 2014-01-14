@@ -5,7 +5,6 @@ In order to combine cameras together in one visual SLAM framework, extrinsic cal
 
 \section{Extrinsic calibration tool}
 \label{sec:ros_tool}
-%TODO: understand this better
 
 An extrinsic calibration between multiple perspective cameras can be performed given a checkerboard of known dimensions.  If the checkerboard is visible and can be detected from all cameras, a non linear optimization to determine the 6 DoF transformation between cameras can be performed.  A tool to provide such functionality is provided as a ROS package.\footnote{Camera pose calibration, \url{http://wiki.ros.org/camera_pose_calibration?distro=groovy}}  This package was utilised in order to obtain an initial estimate of the transformation from stereo to omni camera.
 
@@ -18,7 +17,7 @@ An extrinsic calibration between multiple perspective cameras can be performed g
 
 \section{Omni Camera Perspective Image}
 \label{sec:perspective_from_donut}
-%TODO fix citaion
+
 The package as described above for the extrinsic calibration works only for perspective cameras. This means cameras for which the intrinsic parameters are known and images are undistorted such that all straight lines appear straight.  However this is not the case for the omni camera.  Both the original donut image and unwrapped circular image are distorted and therefore will not work with the camera pose calibration package.  Therefore a new camera projection for the omni cam is necessary, to represent part of the omni image as a perspective type projection.
 
 An algorithm was developed to create a perspective image for calibration from the unwrapped image.  Using Scaramuzza's camera model\cite{scaramuzza_06} there exists a  mapping from 3D ray to pixel coordinates, and pixel coordinates to 3D ray.  Given these functions it is possible to create a perspective image, what is required is a set of 3D rays to be defined for every pixel of the perspective image.  The algorithm for creating 3D rays and populating the perspective image is as follows:
@@ -59,7 +58,8 @@ An algorithm was developed to create a perspective image for calibration from th
   \label{fig:omni_perspective}
 \end{figure}
 
-The focal length will be the desired focal length of the new perspective image. This can be defined by the user.  The size of the perspective image $\bv I(cols, rows)$ may also be defined by the user.  The function project($\bv P$) takes a 3D ray $\bv P$ and projects it to 2D pixel coordinates.  The pixel coordinates returned will be represented as floating point variables.  Therefore, the function bilinearInterpolate($\bv P$)(cite) takes these pixel coordinates and produces an approximation of the intensity at these coordinates from the unwrapped image using bilinear interpolation.
+%TODO cite bilinearinterpolatino
+The focal length will be the desired focal length of the new perspective image. This can be defined by the user.  The size of the perspective image $\bv I(cols, rows)$ may also be defined by the user.  The function project($\bv P$) takes a 3D ray $\bv P$ and projects it to 2D pixel coordinates.  The pixel coordinates returned will be represented as floating point variables.  Therefore, the function bilinearInterpolate($\bv P$) takes these pixel coordinates and produces an approximation of the intensity at these coordinates from the unwrapped image using bilinear interpolation.
 
 In practice, the rays will be the same for a set of perspective image parameters.  Therefore the rays are pre-calculated in the form of a perspective pixel coordinate to omni pixel coordinate lookup table.
 
@@ -72,7 +72,7 @@ In practice, the rays will be the same for a set of perspective image parameters
   \label{fig:omni_images}
 \end{figure}
 
-The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is convenient, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. %TODO long sentence
+The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is convenient, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. 
 
 \section{Online validation of extrinsic calibration}
 \label{sec:verification_tool}

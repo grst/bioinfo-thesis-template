@@ -24,9 +24,7 @@ The contributions of this work may be summarized as follows:
 
 \section{Future Work}
 
-%TODO: place recogs citation
-
-There are a number of different aspects that could be identified for future work.  The most obvious improvement could be obtained by focusing on the place recognition component.  The place recognizer used in this work was a rather primitive implementation and produced a lot of false positives.  Using the architecture described in this work, it would actually be very easy to swap it out with another existing proven algorithm, such as Fabmap or the DIRD based place recognition library.
+There are a number of different aspects that could be identified for future work.  The most obvious improvement could be obtained by focusing on the place recognition component.  The place recognizer used in this work was a rather primitive implementation and produced a lot of false positives.  Using the architecture described in this work, it would actually be very easy to swap it out with another existing proven algorithm, such as Fabmap\cite{fabmap} or the DIRD\cite{lategahn_13} based place recognition library.
 
 There are also alternatives to using image based place recognition, such as using GPS.  This should produce much more accurate loop closure candidates.  Another much simpler option is to select keyframes based on euclidean distance between keyframes in the SLAM graph.  To operate optimally this would need to be implemented as another graph that could be updated efficiently from the SLAM graph.
 

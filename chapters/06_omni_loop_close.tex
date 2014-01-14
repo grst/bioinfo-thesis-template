@@ -18,10 +18,9 @@ It has also been mentioned in section \ref{subsec:selected_approach} that calcul
 
 \subsection{Circular Matching}
 
-%TODO circular matching citation
-%TODO siftgpu citation
+%TODO cite circular matching
 
-For both approaches, there is a data association stage between omni camera images and stereo images.  Features were extracted from stereo images and the unwrapped spherical image using SIFTGPU.  Matching is then performed, also using SIFTGPU between left and right, left and omni and right and omni.  These three match lists are filtered for robust matches using circular matching. 
+For both approaches, there is a data association stage between omni camera images and stereo images.  Features were extracted from stereo images and the unwrapped spherical image using SIFTGPU\cite{siftgpu_11}.  Matching is then performed, also using SIFTGPU between left and right, left and omni and right and omni.  These three match lists are filtered for robust matches using circular matching. 
 
 \begin{figure}[h]
   \centering
@@ -107,14 +106,14 @@ The pipeline that calculates a list of scale offsets is listed below, and repres
 
 \begin{enumerate}
 \itemsep0em
- \item Perform circular matching between left/right/omni images %TODO screenshot
+ \item Perform circular matching between left/right/omni images 
  \item Triangulate 3D points in metric scale using left/right stereo circular matches
  \item For each 3D stereo point:
  \begin{enumerate}
    \item Ensure the matching omni point was an inlier used in pose estimation
    \item Obtain the 3D non metric point triangulated from 5 point transformation
    \item Transform the stereo point to the omni camera frame from the extrinsic calibration $\bv P_{OM} =  ^{OM}\bv T_{ST} \bv P_{ST}$
-   \item Calculate scale offset as per formula \ref{eq:scale_offset} %TODO
+   \item Calculate scale offset as per formula \ref{eq:scale_offset}
    \item Add to list of offsets 
  \end{enumerate}
 \end{enumerate} 
@@ -144,8 +143,8 @@ Having determined a number of scale offsets, a single offset needs to be determi
 %\end{figure}
 
 It would be possible to apply RANSAC in this case, choosing a random scale offset to scale all of the points and using the sum of euclidean distance between correspondences as an error function.  This would be computationally expensive, and also requires parameter tuning.  So rather a 'weighted mean' strategy was applied, after having explicitly handled the outliers.
-%TODO citaion
-In order to compensate for outliers, first a robust mean is calculated using (citation) robust mean algorithm.  Outliers can then be identified by comparing them with the robust mean and removed from the list. To deal with the depth uncertainty of points, a weighted average is calculated as follows:
+
+In order to compensate for outliers, first a robust mean is calculated using Jonsson's\cite{jonsson_05} robust mean algorithm.  Outliers can then be identified by comparing them with the robust mean and removed from the list. To deal with the depth uncertainty of points, a weighted average is calculated as follows:
 
 \begin{equation}
 \centering
@@ -154,8 +153,6 @@ s_{mean} = \dfrac{\displaystyle\sum\limits_{i=0}^n{\dfrac{s_i}{z_i^2}}}
 \end{equation}
 
 $s_i$ denotes a single scale offset, and $z_i$ is the corresponding depth value as calculated by stereo matching.  The idea behind this calculation is to provide weights inversely proportional to the depth of the point, such that distant points are heavily penalised.  Before applying this weighting strategy, the scale calculation was often over estimated and sometimes unstable.  This weighted mean function provided much more stable and accurate scale offsets.
-
-%TODO robust mean citation
 
 %\begin{figure}[h]
   %\centering

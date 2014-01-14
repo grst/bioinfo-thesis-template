@@ -387,7 +387,7 @@ The p3p algorithm\cite{kneip_11} takes 3 2D $\rightarrow$ 3D correspondances bet
 \subsubsection{Point triangulation}
 \label{subsec:point_triangulation}
 
-Point triagulation is the task of estimating the location of a point, given two or more views of that point, and the transformations between those views.  Jonsson\cite{jonsson_05} has a well established algorithm for solving this problem.
+Point triagulation is the task of estimating the location of a point, given two or more views of that point, and the transformations between those views.  Lindstrom\cite{lindstrom_10} has a well established algorithm for solving this problem.
 
 \subsubsection{Stereo pose estimation}
 \label{subsec:horn}
@@ -432,13 +432,13 @@ At this stage it is possible to calculate a map and trajectory by performing pos
 
 There are two established approaches to address this.  The first and more well known approach is the use of filtering, e.g. the Extended Kalman Filter (EKF)\cite{ekf} or the Particle Filter\cite{particle_filter}.  In the case of Kalman filtering, landmark positions are added to the system state.  In the case of particle filtering, many initial random robot poses are considered and the particles converge to a solution.
 
-In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state at the time of observation as per filtering.  This has been proved to improve accuracy of SLAM systems. \cite{why_filter}  
+In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state at the time of observation as per filtering.  This has been proved to improve accuracy of SLAM systems. Strasdat et. al.\cite{why_filter} have an excellent publication that illustrates that a graph optimization approach improves accuracy compared to a filtering approach for the same amount of computation.
 
 More literture on the formulation of SLAM is well covered by Durrant-Whyte's tutorial\cite{slam_1} \cite{slam_2}.
 
 \section{Visual SLAM}
 
-SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  Visual SLAM was first introduced by Davison with his work using a monocular camera\cite{davison_03}.  Since then, a plethora of VSLAM algorithms for monocular cameras\cite{davison_04}\cite{ptam}\cite{dtam}, stereo cameras \cite{mei_09}\cite{paz_08}\cite{rslam}\cite{particle_slam}\cite{strasdat} and RGBD cameras \cite{rgbdslam}\cite{kinfu}\cite{kintinuous} have been developed.
+SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  Visual SLAM was first introduced by Davison with his work using a monocular camera\cite{davison_03}.  Since then, a plethora of VSLAM algorithms for monocular cameras\cite{davison_04}\cite{ptam}\cite{dtam}, stereo cameras \cite{mei_09}\cite{paz_08}\cite{rslam}\cite{particle_slam}\cite{strasdat_11} and RGBD cameras \cite{rgbdslam}\cite{kinfu}\cite{kintinuous} have been developed.
 
 \subsection{Basic VSLAM pipeline}
 
