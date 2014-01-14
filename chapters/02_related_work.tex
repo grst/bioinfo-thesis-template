@@ -48,8 +48,7 @@ They may also be composed as follows;
 \begin{align}
  ^A\bv{T}_C = ^A\bv{T}_B \cdot ^B\bv{T}_C
 \end{align}
-Composition is associative but not commutive.  The selected notation helps to disambiguate multiplication order.  As $^A\bv{T}_B$ transforms from frame $B$ to frame $A$, anything being multiplied from the right must be in frame $B$, and anything being multiplied from the left must be in frame $A$.  This notation is consistent throughout the thesis and in the code to avoid confusion.
-%TODO: add reference to niko's tutorial
+Composition is associative but not commutive.  The selected notation helps to disambiguate multiplication order.  As $^A\bv{T}_B$ transforms from frame $B$ to frame $A$, anything being multiplied from the right must be in frame $B$, and anything being multiplied from the left must be in frame $A$.  This notation is consistent throughout the thesis and in the code to avoid confusion. More details about transformation parameterization can be found in Blanco's tutorial \cite{blanco_12}.
 
 %a point $\bv{P}_A$ multiplied by $^W\bv{T}_A$ from the right transforms it to $\bv{P}_W$.
 
@@ -57,10 +56,7 @@ Composition is associative but not commutive.  The selected notation helps to di
 \section{Lie Groups}
 \label{sec:lie_group}
 
-A Lie group $G$ is a set of elements that must satisfy a number of axioms: the group must be closed under its binary operation; it must be associative; it must have a unique identity element and each element must have a unique inverse. A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.
-%TODO add reference
-%link to copy formulas:
-%https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&ved=0CC4QFjAA&url=http%3A%2F%2Fwww.ai.sri.com%2F~agrawal%2Ficcv05.pdf&ei=tzWQUrW_JYqjrgGgyoHgBQ&usg=AFQjCNEf5gEIFxkeoWnymDixktsxuHRilQ&sig2=94gwoKQvghQEIh_nLeAZ8A&bvm=bv.56988011,d.aWM
+A Lie group $G$ is a set of elements that must satisfy a number of axioms: the group must be closed under its binary operation; it must be associative; it must have a unique identity element and each element must have a unique inverse. A Lie group can be thought of as a manifold, allowing calculus on a local space.  The local neighbourhood of any element can be described by its tangent space, which forms the so called Lie Algebra $\mathfrak g$.  For every element there is an exponential map $\exp\colon \mathfrak g \to G$ that maps from Lie algebra to its Lie Group element.  There also exists a logarithmic map $\log\colon G \to \mathfrak g$.  That maps from the Lie Group element to Lie algebra.  \cite{Agrawal_06}
 
 In this work, the special euclidean groups $SO(3)$ and $SE(3)$ are used to represent rotations and rigid body transformations respectiveley.  They may be defined as Lie Groups as follows:
  
@@ -139,8 +135,6 @@ In order to utilise a camera as a sensor, a mapping between image coordinates an
 \subsection{Pinhole Camera Model}
 \label{subsec:pinhole_cam}
 
-%TODO: references
-
 The pinhole camera model is the most basic and common of camera models used in computer vision.  It describes the mathematical relationship between the coordinates of a 3D point in the world and its projection onto an image plane.  This model assumes the aperture of the camera to be an ideal pinhole. It does not consider lenses used to focus light which in reality results in lense distortion.  However practical considerations such as lense distortion can be compensated for.
 
 The pinhole camera model assumes the camera to be a sealed box with a pinhole aperture on one side, and the image plane, or image sensor on the other side.  Having a small aperture blocks most of the light rays from objects in the world and allows a focused and inverted image of the world to be recorded. Fig. \ref{fig:pinhole_inverted}
@@ -167,19 +161,15 @@ For all intents and purposes, this model can be redrawn as in Fig. \ref{fig:pinh
 
 This relation is just the x-z plane however the exact same can be applied for the y-z plane.   
 
-Take note that the principle point (center of image) will not be aligned exactly to the center of the image sensor, some offset will exist and will vary from camera to camera.  In addition the focal length varies slightly from camera to camera.  Therefore to properly convert from world coordinates to image coordinates and back both the the x and y focal lengths, and the image coordinates of the principle point need to be determined.  This can be done by performing an intrinsic calibration.
-%TODO: references
-
-%http://www.jordicenzano.name/projects/2D-to-3D-Paradigm-overview/camera-model
-%use this for picture motivation
+Take note that the principle point (center of image) will not be aligned exactly to the center of the image sensor, some offset will exist and will vary from camera to camera.  In addition the focal length varies slightly from camera to camera.  Therefore to properly convert from world coordinates to image coordinates and back both the the x and y focal lengths, and the image coordinates of the principle point need to be determined.  This can be done by performing an intrinsic calibration.\cite{camera_model}
+%TODO: add page number to book
 
 \subsection{Lense Distortion}
 \label{subsec:lense_distortion}
-%TODO: references
 
 The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is often used to focus more light rays onto the sensor and allow a sharper image.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  reference shows how to correct for lense distortion given a set of distortion parameters associated with a camera.  These coefficients may be determined through calibration.  Fig. \ref{fig:lense_distortion} shows an example of lense distortion and how it can be compensated for.
 
-Calibration of focal lengths, principle points and distortion coefficients can all be done in one step using a checkerboard of known geometry.  This is called intrinsic calibration.
+Calibration of focal lengths, principle points and distortion coefficients can all be done in one step using a checkerboard of known geometry.  This is called intrinsic calibration.\cite{devernay_01}
 
 %When undistorting the image it is not uncommon that parts of the new image around the border will contain no information.  This is overcome by cropping and resizing the image.  This affects calibrated focal length parameters.  However when remapping a new image, new focal lengths can also be determined.
 
@@ -289,13 +279,13 @@ Having determined the depth, x and y coordinates may easily be determined using 
 
 This is a very straightforward approach to stereo triangulation.  In practice this can be improved by feature point detection with subpixel accuracy, disparity interpolation or dense stereo matching.
 
-%TODO lots and lots of stereo citations
+%TODO cite stereo disparity
 
 \subsection{Omnidirectional Camera}
 
 The omnidirection camera uses a lenses and mirrors to direct light from a 360$^{\circ}$ viewing angle onto one image plane.  The resulting image is in the shape as a donut, with blind spots in the middle and around the edges. Fig. \ref{fig:omni_donut}.
 
-In order to project points from image to world and world to image coordiantes, the omnidirectional camera model described by Scaramuzza et al. was used and their Matlab toolbox was utilized for calibration. Mei and Rives also provide a different camera model for omnidirectional cameras.
+In order to project points from image to world and world to image coordiantes, the omnidirectional camera model described by Scaramuzza et al. \cite{scaramuzza_06} was used and their Matlab toolbox \cite{scaramuzza_06_02} was utilized for calibration. Mei and Rives also provide a different camera model for omnidirectional cameras.
 
 Given the camera model, the image may be reprojected to a spherical image (for example see Fig. \ref{fig:unwrapped}), or to a perspective image (see Section \ref{sec:perspective_from_donut}).  For points projected to world coordinates, the omni camera frame is shown in Fig. \ref{fig:omni_coord_sys}.
 
@@ -312,7 +302,6 @@ Given the camera model, the image may be reprojected to a spherical image (for e
   \caption{Omni camera coordinate frame}
   \label{fig:omni_coord_sys}
 \end{figure}
-%TODO scarramuzza up ya bum!
 
 \section{Computer Vision Basics}
 \label{sec:computer_vision}
@@ -324,15 +313,11 @@ Feature detection is the process of finding local regions of an image which are 
 
 Once a feature point has been determined, a descriptor for the identified region needs to be defined, such that it can be reidentified.  This is called feature description.  A naive approach would be to simply use a small image patch around the area of the feature point, however this description would be highly dependant on the viewpoint of the camera, as well as lighting conditions, which makes it not very useful for reidentification.
 
-To overcome this, a multitude of computer vision tools can be applied, such as filtering, blurring, image gradients, sampling, linear transformations, non linear transformations, histograms and dimensionality reduction.  The goal is to design a feature descriptor that is unique and repeatable, as invariant to viewpoint and lighting conditions as possible, computationally efficient and also have a long name which results in a ridiculous acronym.  A plethora of feature description algorithms have emerged in the last 10 years that address these design goals, to name a few; SIFT, SURF, HOG, GLOH, ORB, BRIEF, BRISK, FREAK and DIRD.
+To overcome this, a multitude of computer vision tools can be applied, such as filtering, blurring, image gradients, sampling, linear transformations, non linear transformations, histograms and dimensionality reduction.  The goal is to design a feature descriptor that is unique and repeatable, as invariant to viewpoint and lighting conditions as possible, computationally efficient and also have a long name which results in a ridiculous acronym.  A plethora of feature description algorithms have emerged in the last 10 years that address these design goals, to name a few; SIFT\cite{sift_04}, SURF\cite{surf_06}, HOG\cite{hog_05}, ORB\cite{orb_11}, BRIEF\cite{brief_10}, BRISK\cite{brisk_11}, FREAK\cite{freak_12} and DIRD\cite{lategahn_13}.
 
-%TODO: cite SIFT, SURF, HOG, GLOH, ORB, BRIEF, BRISK, FREAK and DIRD.
 Feature detection and description is important to find distinct, individual points that can be reidentified over multiple frames from different viewpoints.  This forms the basis of data association for visual tracking and visual navigation.
 
-For contributions of this work, namely the camera extrinsic calibration and loop closure pipeline in chapters \ref{chapter:extrinsic_calibration} and \ref{chapter:omni_loop_close}, an implementation of SIFT on the GPU (SIFTGPU) was used.  The underlying SLAM framework described in chapter \ref{chapter:ScaViSLAM} uses a combination of FAST detector and BRIEF extractor.  The place recognition module (Section \ref{sec:bag_of_words}) uses SURF.
-%TODO cite siftgpu
-
-%Outline what is feature point detection, description and matching, why we need it.  Mention SIFT and SURF and cite them.  Mention that we used a GPU implemtation of SIFT, cite the ETH paper. Mention a bunch of other descriptors, cite them as well.
+For contributions of this work, namely the camera extrinsic calibration and loop closure pipeline in chapters \ref{chapter:extrinsic_calibration} and \ref{chapter:omni_loop_close}, an implementation of SIFT on the GPU\cite{siftgpu_11} (SIFTGPU) was used.  The underlying SLAM framework described in chapter \ref{chapter:ScaViSLAM} uses a combination of FAST detector and BRIEF extractor.  The place recognition module (Section \ref{sec:bag_of_words}) uses SURF.
 
 \subsection{Feature Matching}
 
@@ -342,7 +327,7 @@ This process varies greatly depending on the feature descriptor selected, as des
 
 Binary type descriptors on the other hand, for example ORB or BRIEF, encode the descriptor patch as intensity values and are designed to be matched by performing binary operations between the two patches for maximal computational efficiency.
 
-SIFTGPU also has feature matching functions and is used in this work.
+For this work the matching functions provided by SIFTGPU were utilised.
 
 \subsection{Reprojection Error}
 \label{subsec:reprojection_error}
@@ -350,13 +335,12 @@ SIFTGPU also has feature matching functions and is used in this work.
 A common operation that arises in geometry estimation in computer vision is that given a corresponding point pair, calculate the distance between the two points given that they can both be projected into the same reference frame.  A straightforward approach would be to estimate the full 3D position of each point, transform one of them into the same reference frame as the other, and calculate euclidean distance.  This is a valid approach, although some drawbacks exist.  If the 3D position of the point has not been determined accurately, for instance the depth estimation of a very distant point, then this error will be introduced into the distance measurement.  The two points may be closely aligned from the perspective of the camera, but if the 3D estimation is wrong, this correspondance will have a high error associated with it.
 
 Reprojection error compensates for this problem.  To calculate reprojection error both points are transformed to the reference frame of the camera, and then projected into image coordinates using the camera model.  A distance can then be measured in pixels between where the two points occur in the image.  This much more accurately models the precision of the camera sensor.
-%TODO reprojection error citation
+%TODO cite reprojection error
 
 \subsection{RANSAC}
 \label{subsec:RANSAC}
-%TODO ransac citation
 
-Random Sample Consensus (RANSAC) is an iterative method for determining parameters of a mathamatical model based on observed data that may contain outliers.  The idea of the algorithm is to parameterize the model such that it best fits only the inliers, and to identify and discard outliers when fitting a model.  The basic algorithm may be described as follows
+Random Sample Consensus (RANSAC)\cite{ransac} is an iterative method for determining parameters of a mathamatical model based on observed data that may contain outliers.  The idea of the algorithm is to parameterize the model such that it best fits only the inliers, and to identify and discard outliers when fitting a model.  The basic algorithm may be described as follows
 
 \begin{enumerate}
  \item Randomly select the minimum number of data points required to parameterize the mathematical model
@@ -387,8 +371,7 @@ Geometry estimation involves taking point correspondances from two different cam
 \subsubsection{5 point algorithm}
 \label{subsec:5point}
 
-The 5 point algorithm takes 5 2D $\rightarrow$ 2D correspondances of two camera images and detemines a transformation matrix that transforms from one camera frame to the other. It is important to note that the transformation returned by this algorithm is not in metric scale, that is, it is computed to some arbitrary scale.  This is because it is impossible to infer 3D metric information about the world without some form of prior measurement or extrinsic calibration to the world.  Simply put; it is unknown if the camera has traveled a long distance in a large space, or a short distance in a small space.
-%TODO 5 point citatino
+The 5 point algorithm\cite{nister_04} takes 5 2D $\rightarrow$ 2D correspondances of two camera images and detemines a transformation matrix that transforms from one camera frame to the other. It is important to note that the transformation returned by this algorithm is not in metric scale, that is, it is computed to some arbitrary scale.  This is because it is impossible to infer 3D metric information about the world without some form of prior measurement or extrinsic calibration to the world.  Simply put; it is unknown if the camera has traveled a long distance in a large space, or a short distance in a small space.
 
 \begin{figure}[h]
   \centering
@@ -399,39 +382,33 @@ The 5 point algorithm takes 5 2D $\rightarrow$ 2D correspondances of two camera 
 
 \subsubsection{p3p algorithm}
 \label{subsec:p3p}
-The p3p algorithm take 3 2D $\rightarrow$ 3D correspondances between a camera frame and some established 3D map, and returns a transformation between the map frame and the camera frame.  This algorithm propagates the scale of the map to the frame being registered.
-%TODO p3p citation
+The p3p algorithm\cite{kneip_11} takes 3 2D $\rightarrow$ 3D correspondances between a camera frame and some established 3D map, and returns a transformation between the map frame and the camera frame.  This algorithm propagates the scale of the map to the frame being registered.
 
 \subsubsection{Point triangulation}
 \label{subsec:point_triangulation}
 
-Point triagulation is the task of estimating the location of a point, given two or more views of that point, and the transformations between those views.  x has a well established algorithm for this problem.
-
-%TODO cite triagulation
+Point triagulation is the task of estimating the location of a point, given two or more views of that point, and the transformations between those views.  Jonsson\cite{jonsson_05} has a well established algorithm for solving this problem.
 
 \subsubsection{Stereo pose estimation}
 \label{subsec:horn}
 
 As mentioned in Section \ref{subsec:stereo_cam}, a stereo camera can calculate 3D metric points for a given frame.  Therefore it is desirable to calculate a pose given a set of 3D $\rightarrow$ 3D correspondances.  This is not only useful for stereo cameras, but for any sensor which can estimate or measure 3D locations of points.
 
-Algorithms have been proposed by Umeyama and Horn to solve this.  Both take at least 3 correspondances and return a 6 DoF transformation between frames.
-
-%TODO cite horn, umyama
+Algorithms have been proposed by Umeyama\cite{umeyama} and Horn\cite{horn_87} to solve this.  Both take at least 3 correspondances and return a 6 DoF transformation between frames.
 
 \section{Place Recognition}
 \label{sec:bag_of_words}
 
 Given a set of images, place recognition is the task of 'recognizing' if a new image matches to one or more images in the set.  Unlike the geometry estimation algorithms, this returns a simple true false, or probability match, rather than a frame to frame transformation.  Often for place recognition a wide range of differing images is selected as the set to 'train' on, and by detecting if a new image matches an existing one, then the location of the camera that took the new image should be roughly close to that of the matched image in the training set.
 
-The bag of words approach uses clustering of features in descriptor space.  This technique taken from object classification.  Similar features are grouped together and put into different bins to form a histogram which describes the entire image.  These histograms may be represented as vectors and compared using vector distance.  In addition many histograms can be stored in a tree structure such as a KD tree to reduce searching time.
-%TODO cite kdtree
+The bag of words approach\cite{bag_of_words} uses clustering of features in descriptor space.  This technique taken from object classification.  Similar features are grouped together and put into different bins to form a histogram which describes the entire image.  These histograms may be represented as vectors and compared using vector distance.  In addition many histograms can be stored in a tree structure such as a KD tree\cite{kdtree} to reduce searching time.
 
-More sophistiacted approaches exist, including FABMAP or using a vocabulary tree approach.  There has also been some work in address invariance to lighting conditions, for example DIRD place recognition.  This library uses a new feature descriptor that has been learnt especially for place recognition with lighting condition invariance in mind.
+More sophistiacted approaches exist, including FABMAP\cite{fabmap} or using a vocabulary tree\cite{vocab_tree} approach.  There has also been some work in address invariance to lighting conditions, for example DIRD place recognition.  This library uses a new feature descriptor that has been learnt especially for place recognition with lighting condition invariance in mind.
 
 \section{SLAM}
 \label{sec:slam}
 
-Simulataneous Localization and Mapping (SLAM) is the technique of building a map of a previously
+Simulataneous Localization and Mapping (SLAM)\cite{slam} is the technique of building a map of a previously
 unexplored area whilst simultaneously determining a position (localizing) within that map.  The
 traditional approach for SLAM can be split into 4 steps.
 \begin{enumerate} \itemsep1pt \parskip0pt \parsep0pt
@@ -441,7 +418,6 @@ traditional approach for SLAM can be split into 4 steps.
  \item Global Optimization
 \end{enumerate}
 
-%TODO: cite kalman filter
 Feature extraction involves finding unique features within the sensor data that can be later reidentified in future sensor readings.  These features denote individual observations of a landmark through the eyes of a sensor.  A landmark can be thought of as a real world object which can be observed by a sensor.  Data association is the process of matching multiple observations of a single landmark over multiple sensor readings, in essence tracking the landmarks.  Take for example a robot doing 2D indoor SLAM with a 2D laser scanner.  A simple feature would be corners detected in the laser data.  These are observations of real world corners between walls, or any object within range of the laser scanner that would cause a sharp angle to be observed.  These real corners or objects can be thought of as landmarks.
 
 \begin{figure}[h]
@@ -454,15 +430,15 @@ Pose estimation involves using the information of how multiple landmarks have mo
 
 At this stage it is possible to calculate a map and trajectory by performing pose estimation between the current and previous frame and chaining all consecutive pose estimations together.  However this is a rather simple approach, as no temporal information (i.e. information from older sensors data or older poses) is considered when determining the current pose.  Therefore it is desirable to have some 'global optimization' strategy to optimize the trajectory and map over non consecutive sensor data.
 
-There are two established approaches to address this.  The first and more well known approach is the use of filtering, e.g. the Extended Kalman Filter (EKF) or the Particle Filter.  In the case of Kalman filtering, landmark positions are added to the system state.  In the case of particle filtering, many initial random robot poses are considered and the particles converge to a solution.
-%TODO: EKF, particle, davidson
+There are two established approaches to address this.  The first and more well known approach is the use of filtering, e.g. the Extended Kalman Filter (EKF)\cite{ekf} or the Particle Filter\cite{particle_filter}.  In the case of Kalman filtering, landmark positions are added to the system state.  In the case of particle filtering, many initial random robot poses are considered and the particles converge to a solution.
 
-In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state at the time of observation as per filtering.  This has been proved to improve accuracy of SLAM systems.
-%TODO: hauke why filter
+In more recent times graph optimization approaches have become popular as not only do they scale better to larger maps, but they retain original measurements of the world rather than fusing them with the robot state at the time of observation as per filtering.  This has been proved to improve accuracy of SLAM systems. \cite{why_filter}  
+
+More literture on the formulation of SLAM is well covered by Durrant-Whyte's tutorial\cite{slam_1} \cite{slam_2}.
 
 \section{Visual SLAM}
 
-SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  Visual SLAM was first introduced by Davidson with his work using a monocular camera.  Since then, a plethora of VSLAM algorithms for monocular cameras (cite andrew davidson slam, ptam, something else), stereo cameras (more citations) and RGBD cameras (rgbdslam, kinfu, kintinuous) have been developed.
+SLAM has taken many forms depending on sensors available. Visual SLAM (VSLAM) denotes performing SLAM using some kind of camera.  Visual SLAM was first introduced by Davison with his work using a monocular camera\cite{davison_03}.  Since then, a plethora of VSLAM algorithms for monocular cameras\cite{davison_04}\cite{ptam}\cite{dtam}, stereo cameras \cite{mei_09}\cite{paz_08}\cite{rslam}\cite{particle_slam}\cite{strasdat} and RGBD cameras \cite{rgbdslam}\cite{kinfu}\cite{kintinuous} have been developed.
 
 \subsection{Basic VSLAM pipeline}
 
@@ -483,8 +459,7 @@ The error may be either euclidean distance between points or reprojection error 
  \label{eq:ransac_error}
 \end{figure}
 
-Global optimization may be done with filtering.  Davidson et al. has a prominent example of such a system.  However as mentioned before graph optimzation has been shown to be more accurate and is now more common in VSLAM.  The formulation of graph optimization will be expanded on in Section \ref{subsec:graph_slam}.
-%TODO davidson, ptam
+Global optimization may be done with filtering.  Davidson et al.\cite{davison_03} has a prominent example of such a system.  However as mentioned before graph optimzation, for example \cite{ptam}, has been shown to be more accurate and is now more common in VSLAM.  The formulation of graph optimization will be expanded on in Section \ref{subsec:graph_slam}.
 
 \subsection{Keyframe SLAM}
 
@@ -501,8 +476,7 @@ Keyframe SLAM provides such a strategy.  The idea of keyframe SLAM is that certa
 
 Keyframes may be selected based on a set of criteria such as minimum number of landmarks still visible from the previous keyframe, distance traveled from the previous keyframe, absolute value of rotation to the previous keyframe or time elapsed since the last keyframe was created. 
 
-The structure of keyframe SLAM lends itself to separate the mapping and tracking pipelines to different threads.  PTAM is a noteable example of which.  In this case the tracking thread is optimized to excectute quickly, so it can run in realtime without skipping frames, and the mapping thread is responsible for graph optimization and may run slower.  This allows for an accurate estimation and fast update rate, and also a globally consistent map.
-%TODO: cite PTAM
+The structure of keyframe SLAM lends itself to separate the mapping and tracking pipelines to different threads.  PTAM\cite{ptam} is a noteable example of which.  In this case the tracking thread is optimized to excectute quickly, so it can run in realtime without skipping frames, and the mapping thread is responsible for graph optimization and may run slower.  This allows for an accurate estimation and fast update rate, and also a globally consistent map.
 
 %The main idea behind keyframe SLAM is to divide the tasks of localization and mapping, and have them run in parallel is separate threads.  The mapping thread defines a keyframe to track against. This amounts to a global pose of the keyframe, as well as a number of landmarks visible from that keyframe recorded relative to that keyframe pose.  The localization thread localizes the camera with respect to that keyframe.  If the camera moves or rotates a significant distance away from the active keyframe, a new keyframe will be created with a known transformation to the previous keyframe.
 
@@ -526,7 +500,7 @@ It is possible to compensate for this drift by performing 'large loop closures'.
 \section{Graph Optimization}
 \label{subsec:graph_slam}
 
-To express an optimization problem as a graph, one can think of vertices as being variables, or states, to optimize over, and edges as being constraints for 1 or more vertices.  Edges for a single vertex are called unary edges, for two vertices binary edges and more than 2 multi edges.  Vertex states may be one or more dimensions.  Having said that, vertices may also be used as parameters in the optimization problem.  Error functions to minimise are then defined as how well vertex states fit their edge constraints.  Due to the fact an edge may connect more than two vertices, this type of graph is referred to as a hyper-graph.
+To express an optimization problem as a graph, one can think of vertices as being variables, or states, to optimize over, and edges as being constraints for 1 or more vertices.  Edges for a single vertex are called unary edges, for two vertices binary edges and more than 2 multi edges.  Vertex states may be one or more dimensions.  Having said that, vertices may also be used as parameters in the optimization problem.  Error functions to minimise are then defined as how well vertex states fit their edge constraints.  Due to the fact an edge may connect more than two vertices, this type of graph is referred to as a hyper-graph.  Please see \cite{kuemmerle13phd} for more details on SLAM graph formulation.
 
 An example of how a simple SLAM problem may be expressed as a hyper-graph is shown below.
 \begin{figure}[h]
@@ -561,8 +535,8 @@ In order to compute this optimization, the generic graph problem may be represen
 
 \subsection{Solving the least squares problem}
 
-%TODO: citations
-A numerical solution to eq. 4.2 can be performed using a non linear solver such as Gauss-Newton or Levenberg-Marquardt (cite, cite).  The error function can be approximated by its first order Taylor expansion around the current initial guess $\breve{\bv x}$
+%TODO: cite LM, GN
+A numerical solution to eq. 4.2 can be performed using a non linear solver such as Gauss-Newton or Levenberg-Marquardt.  The error function can be approximated by its first order Taylor expansion around the current initial guess $\breve{\bv x}$
 
 \begin{align}
   \bv e_k(\breve{\bv x}_k + \Delta \bv x_k) &= \bv e_k(\breve{\bv x} + \Delta \bv x) \\
@@ -607,11 +581,6 @@ The Lie algebra provides a compact representation of the element, and therefore 
 \subsection{Error functions}
 \label{sec:error_function}
 The error function $\bv e_k(\bv x_k, \bv z_k)$ measures how well the vertices fit the the edge that they are connected to.  A similar problem is encountered as for vertex increments when calculating error for the case of non euclidean parameterization.  Again for the example of the $SE(3)$ pose, in this case the error, which could be described as an $SE(3)$ pose, needs to be converted to some minimal vector form for the optimizer.  In this case the  logarithmic mapping $\log\colon G \to \mathfrak g$ can be used to achieve this conversion. More details see \ref{sec:lie_group}
-
-%\subsubsection{Robust least squares}
-%TODO huber fill in
-%Use huber instead of squares to make robust against outliers. !
-%CBF
 
 \section{Related work}
 

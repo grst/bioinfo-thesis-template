@@ -43,7 +43,7 @@ New keyframes are added either when the number of shared observations drops belo
 \section{Backend}
 \label{sec:scavislam_backend}
 
-The backend is responsible for maintaining the entire SLAM graph, and thus holds internally its own representation of the whole graph.  It provides interfaces for other modules to add information to the graph, such as the frontend with new keyframes or the place recognizer with new large loop closures. It is also responsible for solving the graph, in this case by using the g2o library. As the graph is designed to run in constant time, the backend has been designed to execute at a relatively fast rate (insert number here) so that the graph may be constantly solved during operation.
+The backend is responsible for maintaining the entire SLAM graph, and thus holds internally its own representation of the whole graph.  It provides interfaces for other modules to add information to the graph, such as the frontend with new keyframes or the place recognizer with new large loop closures. It is also responsible for solving the graph, in this case by using the g2o library\cite{g2o}. As the graph is designed to run in constant time, the backend has been designed to execute at a relatively fast rate (insert number here) so that the graph may be constantly solved during operation.
 %TODO: determine backend speed
 
 %\subsection{Contains the entire graph (not in g2o format)}
