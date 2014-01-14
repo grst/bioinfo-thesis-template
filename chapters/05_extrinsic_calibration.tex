@@ -1,7 +1,7 @@
 \chapter{Extrinsic Calibration}
 \label{chapter:extrinsic_calibration}
 
-In order to combine cameras together in one visual SLAM framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate i.e. well within 0.1$^{\circ}$.  Even a very small rotational offset will result in a significant reprojection error when reprojecting points from one camera to another.  Take for example a rotational error of 0.5$^{\circ}$.  Over a distance of 10m, this would result in a reprojection error of 8.7 pixels for a standard digital camera.
+In order to combine cameras together in one visual SLAM framework, extrinsic calibration between all cameras needs to be performed.  This means finding a transformation that can transform data from one camera's frame to another.  It is critical that such a calibration is highly accurate i.e. well within 0.1$^{\circ}$.  Even a very small rotational error will result in a significant reprojection error when reprojecting points from one camera to another.  Take for example a rotational error of 0.5$^{\circ}$.  Over a distance of 10m, this would result in a reprojection error of 8.7 pixels for a typical digital camera.
 
 \section{Extrinsic calibration tool}
 \label{sec:ros_tool}
@@ -114,7 +114,9 @@ To perform this calibration, data was collected using the online verfication too
 
 An important factor discoverd when using this calibration tool was to have points over the whole image space, and also with a wide range of depth.  Initial calibrations showed excellent performance in terms of reprojection error on the data points used for calibration, however it was not stable for new points at different depths.  It was also noted that the geometry of the optimized pose was not representative of the real world pose between stereo and omni cameras.  
 
-Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection error results and the translation component of the pose between the cameras using data collected in different areas. 'Indoors' denotes the dataset collected when the vehicle was inside, where all points were close. 'Outdoors' denotes data collected outdoors, namely the scene depicted in Fig. \ref{fig:before_after_g2o}, where all points were far away.  'Both' denotes both datasets combined together for optimization.
+Tables \ref{tab:reprojection_error} and \ref{tab:geometry} show reprojection error results and the translation component of the pose between the cameras using data collected in different areas. 'Indoors' denotes a dataset collected when the vehicle was inside, where all points were close. 'Outdoors' denotes data collected outdoors, namely the scene depicted in Fig. \ref{fig:before_after_g2o}, where all points were distant (15-40m).  'Both' denotes both datasets combined together for optimization.  It is important to note that for the indoor dataset has a limited number of points were used due to a lack of scene texture and geometry.  The outdoors dataset also only has points which are very distance (10-40m).  These datasets are therefore not ideal for an accurate calibration, it is more intended as a proof that the calibration works, and what data is required for an accurate calibration.  
+
+The calibration process was repeated for the evaluation, this is described in Section \ref{subsubsec:actual_calibation}.  This dataset is also shown in Table \ref{tab:geometry} as ``Dataset for evaluation''.  In this case there are many points at all different depths and localzations, in order to acheive the highest accuracy calibration.
 
 For Table \ref{tab:geometry}, the rough measurement of the stereo camera position with respect to the omni camera reference frame was done with a ruler, and some axes were difficult to measure given the geometry of the test vehicle.  Therefore the accuracy is low, however it should be within about 10cm.
 
@@ -139,15 +141,16 @@ For Table \ref{tab:geometry}, the rough measurement of the stereo camera positio
 %Optimized using Both & 0.533 & 0.968 \\ 
 
 \begin{table}[H]
-    \begin{tabular}{ p{6cm} r r r} % p{5cm} |}
+    \begin{tabular}{ p{6.5cm} r r r} % p{5cm} |}
     \toprule
     & \multicolumn{3}{r}{\bf{Translation component from pose}}  \\
-    & \multicolumn{1}{c}{\hspace*{1cm}\bf{x (cm)}} & \multicolumn{1}{c}{\hspace*{1cm}\bf{y (cm)}} & \hspace*{1cm}\bf{z (cm)} \\
+    & \multicolumn{1}{c}{\hspace*{0.8cm}\bf{x (cm)}} & \multicolumn{1}{c}{\hspace*{0.4cm}\bf{y (cm)}} & \hspace*{0.4cm}\bf{z (cm)} \\
     \midrule
     Rough Measurement & 10.0 & -100.0 & -50.0 \\
     Optimized using Indoors & -36.4 & -85.0 & -18.5\\
     Optimized using Outdoors & 11.2 & 43.0 & -37.1 \\
     Optimized using Both & 13.0 & -92.5 & -46.9 \\ 
+    Optimized using Dataset for evaluation & 11.6 & -89.2 & -47.1  \\ 
     \bottomrule
     \end{tabular}
     \captionof{table}{Translational component of the transformation that transforms points from the stereo camera frame to the omni camera frame}
@@ -156,7 +159,7 @@ For Table \ref{tab:geometry}, the rough measurement of the stereo camera positio
 
 Table \ref{tab:reprojection_error} shows that when only optimizing on indoors or outdoors datasets, the reprojection error was very high in the area not used for optimization.  It also shows very low reprojection error when optimizing using both datasets (less then 1.0 pixels).  This verifies that points over a wide range of distances is required for calibration, and it also shows an excellent overall calibration result.
 
-Table \ref{tab:geometry} reflects the same result as Table \ref{tab:reprojection_error}.  The geometry of 'Indoors' and 'Outdoors' are quite clearly wrong.  Comparing the rough measurement with the optimization of both datasets, all values are within 10cm, which is expected.
+Table \ref{tab:geometry} reflects the same result as Table \ref{tab:reprojection_error}.  The geometry of 'Indoors' and 'Outdoors' are quite clearly wrong.  Comparing the rough measurement with the optimization of both datasets, all values are within 10cm, which is expected.  ``Dataset for evaluation'', which should be most accurate, is also close to both measured values and ``both'' datasets.
 
 These results show that a good calibration, both in terms of reprojection error and geometrical accuracy can be obtained by calibrating using data points over a wide range of depth. Details of the exact calibration procedure used for evaluation can be found in Section \ref{subsubsec:actual_calibation}.
 

@@ -31,7 +31,16 @@ A number of different types of cameras exist, each having their own advantages a
 
 \section{Problem Statement}
 
-In this thesis fusion of stereo and omnidirectional cameras will be explored.  The question of how to best combine these camera types to improve the accuracy of visual online SLAM will be addressed.  A solution for camera fusion will be selected, implemented and evaluated.  Any supporting algorithms or calibrations will also be presented.
+In this thesis fusion of stereo and omnidirectional cameras will be explored.  A number of questions with regard to this fusion will be addressed, mainly:
+\begin{itemize}
+ \item What is the best approach to camera fusion for improving overall accuracy and robustness?
+ \item How can loop closures be identified using omni camera data?
+ \item How can the scale estimation problem of registration with omni camera data be resolved by stereo data?
+ \item How can a highly accurate extrinsic calibration between the cameras be achieved for use in such a system?
+ \item How can a solution be integrated into an existing SLAM system?
+\end{itemize}
+
+A solution for camera fusion will be selected and implemented.  This will be integrated into an existing SLAM system.  Identifying and calculating loop closures using the omni camera will be discussed in detail.  An evaluation will be performed which will demonstrate that the method choosen considerably improved the accuracy and robustness of the existing SLAM system.  Any supporting algorithms or calibrations will also be presented in full.
 
 \section{Outline}
 

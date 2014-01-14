@@ -17,6 +17,8 @@ The contributions of this work may be summarized as follows:
 
 \begin{itemize}
  \item A novel method for combining stereo and omni cameras to perform loop closures was presented.  This method was shown to improve the accuracy of a stereo SLAM system by 82\%.
+ \item A method for identifying loop closures using omni camera data is presented
+ \item Two algorithms for fusing stereo and omni camera data in order to calculate a correct scale loop closure constraint are identified, implemented and compared.
  \item An extrinsic calibration approach to calibrate a stereo camera to an omni camera for use with the loop closure pipeline was given.  The non linear calibration was shown to produce a high accuracy calibration even with limited field of view overlap between the two cameras.
  \item A modular system architecture to integrate the loop closure pipeline to an existing stereo SLAM system was also outlined.  Given a SLAM system that interfaces with ROS, this architecture could be used to augment the SLAM system with the presented loop closure pipeline.
  \item A ROS wrapper for ScaViSLAM was developed

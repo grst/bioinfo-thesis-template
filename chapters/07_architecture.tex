@@ -34,7 +34,18 @@ In order to do this, ScaViSLAM was split up into two packages; scavislam\_lib an
 
 This ROS wrapper allows ScaViSLAM to subscribe to standard ROS image topics, which means it can use any stereo camera with a ROS device driver.  It can also use ROS bagfiles containing stereo imagery.  In addition, the ROS wrapper provides a complete replacement of the original ScaViSLAM GUI.  The ScaViSLAM graph may be visualized using rviz, and all visual tracking, keyframes and image pyramids may be visualized either in rviz or image\_view.  All of the original GUI functions may be manipulated using dynamic reconfigure.  More details on the visualization and control can be found under Section \ref{sec:visualization_and_control}
 
-\section{Video input}
+\section{ROS Architecture}
+
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=1.0\textwidth]{chapters/images/overall_arch}
+  \caption{ROS node diagram for the entire ScaViSLAM system.  Blue ovals are nodes, arrows indicate communication}
+  \label{fig:overall_arch}
+\end{figure}
+
+Fig. \ref{fig:overall_arch} shows an overall system diagram of ScaViSLAM, showing all the nodes required for the system to run, and the communication between them.  This will be broken down into components in the following sections.
+
+\subsection{Video input}
 \label{sec:video_input}
 
 \begin{figure}[h]
@@ -54,7 +65,8 @@ This omni buffer node could be configured to unwrap and publish all omni camera 
 
 The ROS tool dynamic reconfigure can be used to configure the camera drivers.  This allows driver parameters to be adjusted, such as gain and shutter controls, resolution and image bit depth.
 
-\section{Image based place recognition}
+
+\subsection{Image based place recognition}
 
 \begin{figure}[h]
   \centering
@@ -71,7 +83,7 @@ Finally this architecture allows easy changing between the omni-loop-closure ver
 
 The overall flow for a loop closure is as follows.  ScaViSLAM publishes keyframes as they are created.  The place recognizer encodes a keyframe to the bag of words representation as described in Section \ref{sec:bag_of_words} and associates this new representation with the respective keyframe id.  The original image is then discarded by the place recognizer.  For every new keyframe the place recognizer searches for matching keyframes.  One or more results may then be returned by the place recognizer, in the form of publishing 'potential' loop closure messages, where a single message contains just the two matching ids.  ScaViSLAM subscribes to this potential loop closure topic, and for every ID pair, will obtain all the relevant images from the keyframe storage and then make a geometry check service call.  If the geometry check is successful, then the new edge returned from the geometry check will be added to the SLAM graph.
 
-\section{Visualization and Control}
+\subsection{Visualization and Control}
 \label{sec:visualization_and_control}
 
 \begin{figure}[h]

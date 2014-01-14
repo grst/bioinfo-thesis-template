@@ -1,9 +1,11 @@
 \chapter{Multiple Cameras for SLAM}
 \label{chapter:MultiCamSLAM}
 
+This chapter will discuss the motivation for camera fusion, the advantages and disadvantages of each camera type, and compare potential approaches to camera fusion.  Having discussed various approaches a single approach will be selected to be designed, implemented and evaluated.
+
 \section{Motivation}
 
-There has been significant research in the area of visual SLAM for stereo \\ cameras\cite{mei_09}\cite{paz_08}\cite{rslam}\cite{particle_slam}\cite{strasdat}.  Stereo SLAM has been shown to work very well, however there are a few intrinsic drawbacks of using projective cameras, mainly, the limited field of view.  A larger field of view allows features to be tracked for longer, which in turn provides more accurate point triangulation.  In addition to better triangulation, a larger field of view allows greater overlap of frames, particularly with rotational motion.  This results in pose estimation that is more robust and easier localization against an existing map. %occlusions?
+There has been significant research in the area of visual SLAM for stereo \\ cameras\cite{mei_09}\cite{paz_08}\cite{rslam}\cite{particle_slam}\cite{strasdat_11}.  Stereo SLAM has been shown to work very well, however there are a few intrinsic drawbacks of using projective cameras, mainly, the limited field of view.  A larger field of view allows features to be tracked for longer, which in turn provides more accurate point triangulation.  In addition to better triangulation, a larger field of view allows greater overlap of frames, particularly with rotational motion.  This results in pose estimation that is more robust and easier localization against an existing map. %occlusions?
 
 Using an omnidirectional lense allows a 360$^{\circ}$ view from a single frame.  Such a camera is ideal for doing visual SLAM.  However doing SLAM with a single camera has its own pitfalls.  Firstly the maps and trajectory for mono SLAM will be determined in some non metric scale.  When using stereo, one can determine exact 3D locations of landmarks based on the disparity and a known baseline.  However with a single camera a feature point could lie anywhere on a ray from the focal center to infinity.  Using the 5 point algorithm (Section \ref{subsec:5point}), 3D positions of points of 2D-2D correspondences between two image frames may be estimated, along with a transformation, however this 3D information is represented in some non metric scale.
 
@@ -46,7 +48,7 @@ There are many ways in which stereo and omnidirectional cameras could be fused t
 
 \subsection{Augment Mono-SLAM with stereo}
 
-A straightforward approach would be to use a SLAM algorithm designed for mono slam and address the scale issue with stereo.  Metric 3D points can be determined from stereo and matched to 2D points from the omnidirectional image.  All points and poses may then be initialized to metric scale.  At any point in time the the scale from the mono system can be compared with metric scale and corrected, given there is some overlap field of view between the two cameras and some feature matches.  Nevertheless, using this strategy the performance of the SLAM system would not be improved, it would simply be the same mono SLAM system with correct scale.
+A straightforward approach would be to use a SLAM algorithm designed for mono SLAM and address the scale issue with stereo.  Metric 3D points can be determined from stereo and matched to 2D points from the omnidirectional image.  All points and poses may then be initialized to metric scale.  At any point in time the the scale from the mono system can be compared with metric scale and corrected, given there is some overlap field of view between the two cameras and some feature matches.  Nevertheless, using this strategy the performance of the SLAM system would not be improved, it would simply be the same mono SLAM system with correct scale.
 
 \subsection{Augment Stereo-SLAM with an Omni camera}
 
@@ -58,7 +60,7 @@ This is a valid approach, although the manner in which 3D landmarks are initiali
 
 \subsubsection{Omni camera for loop closure}
 
-The idea here is to use the omni camera to find global loop closures where the stereo camera would fail due to no field of field overlap.  The omni camera can match frames regardless of rotation about the upward facing axis, due to the 360$^{\circ}$ view.  (Fig. \ref{fig:omni_loop_close}) This means that for a robot driving on a ground plane, it could recognize and even match frames invariant of the robots orientation.
+The idea here is to use the omni camera to find global loop closures where the stereo camera would fail due to no field of view overlap.  The omni camera can match frames regardless of rotation about the upward facing axis, due to the 360$^{\circ}$ view.  (Fig. \ref{fig:omni_loop_close}) This means that for a robot driving on a ground plane, it could recognize and even match frames invariant of the robots orientation.
 
 \begin{figure}[h!]
   \centering
@@ -77,4 +79,6 @@ Another idea is to combine all camera images at the lowest level to enable a tig
 
 When developing an online SLAM system, a very important factor to consider is visual odometry drift.  Even with high accuarcy tracking, there will always be some small error which will propagate and over time and cause the trajectory and map to deteriorate. It is likely that tracking accuracy and robustness can be improved by combining stereo and omni cameras in the visual odometry stage, however drift will still occur.
 
-Therefore it is conceivable that the most significant improvement may be made by improving the instances and quality of loop closures to correct for drift.  As a result the omni camera for loop closure has been selected as the approach for this work.  However this approach is not so trivial, as the non metric scale issues still exists.  This exact problem will be addressed in this work.
+Therefore it is conceivable that the most significant improvement may be made by improving the instances and quality of loop closures to correct for drift.  As a result the omni camera for loop closure has been selected as the approach for this work.  However this approach is not so trivial, as the non metric scale issues still exists.  This non metric scale problem will be addressed in this work.  The loop closure approach will be developed, implementated and integrated into an existing SLAM system.  A keyframe SLAM system will be selected, and additional loop closures will be introduced between keyframe pairs.
+
+Having defined the approach this work will take to camera fusion, following will be a discussion of the existing SLAM system that will be used as the underlying framework.
