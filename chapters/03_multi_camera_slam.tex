@@ -1,13 +1,11 @@
 \chapter{Multiple Cameras for SLAM}
 \label{chapter:MultiCamSLAM}
 
-This chapter will discuss the motivation for camera fusion, the advantages and disadvantages of each camera type, and compare potential approaches to camera fusion.  Having discussed various approaches a single approach will be selected to be designed, implemented and evaluated.
+This chapter will discuss the motivation for camera fusion, the advantages and disadvantages of each camera type, and compare potential approaches to camera fusion. The selected approach, which is using an omni camera to improve loop closures in an existing stereo SLAM system will be justified having discussed various approaches. This approach will be then be designed, implemented and evaluated.
 
 \section{Motivation}
 
 There has been significant research in the area of visual SLAM for stereo \\ cameras\cite{mei_09}\cite{paz_08}\cite{rslam}\cite{particle_slam}\cite{strasdat_11}.  Stereo SLAM has been shown to work very well, however there are a few intrinsic drawbacks of using projective cameras, mainly, the limited field of view.  A larger field of view allows features to be tracked for longer, which in turn provides more accurate point triangulation.  In addition to better triangulation, a larger field of view allows greater overlap of frames, particularly with rotational motion.  This results in pose estimation that is more robust and easier localization against an existing map. %occlusions?
-
-Using an omnidirectional lense allows a 360$^{\circ}$ view from a single frame.  Such a camera is ideal for doing visual SLAM.  However doing SLAM with a single camera has its own pitfalls.  Firstly the maps and trajectory for mono SLAM will be determined in some non metric scale.  When using stereo, one can determine exact 3D locations of landmarks based on the disparity and a known baseline.  However with a single camera a feature point could lie anywhere on a ray from the focal center to infinity.  Using the 5 point algorithm (Section \ref{subsec:5point}), 3D positions of points of 2D-2D correspondences between two image frames may be estimated, along with a transformation, however this 3D information is represented in some non metric scale.
 
 \begin{figure}[h!]
   \centering
@@ -15,6 +13,8 @@ Using an omnidirectional lense allows a 360$^{\circ}$ view from a single frame. 
     \caption{Omni camera image unwrapped to panoramic picture}
   \label{fig:unwrapped}
 \end{figure}
+
+Using an omnidirectional lense allows a 360$^{\circ}$ view from a single frame.  Such a camera is ideal for doing visual SLAM.  However doing SLAM with a single camera has its own pitfalls.  Firstly the maps and trajectory for mono SLAM will be determined in some non metric scale.  When using stereo, one can determine exact 3D locations of landmarks based on the disparity and a known baseline.  However with a single camera a feature point could lie anywhere on a ray from the focal center to infinity.  Using the 5 point algorithm (Section \ref{subsec:5point}), 3D positions of points of 2D-2D correspondences between two image frames may be estimated, along with a transformation, however this 3D information is represented in some non metric scale.
 
 The second main problem with mono SLAM is scale drift.  Once a pose between two initial images has been calculated, further images need to be registered to this same scale.  The p3p algorithm (Section \ref{subsec:p3p}) calculates a pose for 2D-3D correspondences, propagating the same scale for the new landmarks.  However even a very small error in the scale estimation will cause scale drift over many frames, just as the 3D pose will also drift over long trajectories.
 

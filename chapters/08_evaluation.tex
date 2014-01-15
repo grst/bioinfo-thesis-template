@@ -54,6 +54,7 @@ Having calibrated the intrinsic parameters, the first step of extrinsic calibrat
 The calibration from the ROS calibration was used as an initial condition for the non linear optimization refinement. (See Section \ref{sec:g2o_extrinsic_cal}).  Video data was recorded outside using the online verification tool \ref{sec:verification_tool}.  In order to collect points of different depth, a textured surface was held in front of the camera at close range and moved slowly away.  Being outside, many distant points were also recorded.  The non linear extrinsic refinement tool was then run to obtain a refined calibration.   
 
 \subsection{Groundtruth}
+\label{subsec:groundtruth}
 
 A combination of Differential Global Positional System (DGPS) and inertial sensors provided a ground truth trajectory poses (translation and rotation) with an accuracy of less than 50cm. 
 

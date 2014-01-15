@@ -26,26 +26,26 @@ An algorithm was developed to create a perspective image for calibration from th
  \caption{Algorithm to generate perspective image}
  %\SetLine % For v3.9
  %\SetAlgoLined % For previous releases [?]
- Initialize $\bv I(cols,rows)$; \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+ Initialize $\bv I(cols,rows)$ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
  // perspective image to populate \\
- $u_c = cols/2$;  \\
- $v_c = rows/2$;  \\
- Define $\bv F_{ray}$; \ \ \ \ \ 
+ $u_c = cols/2$  \\
+ $v_c = rows/2$  \\
+ Define $\bv F_{ray}$ \ \ \ \ \ 
  // vector that points to center of desired perspective image \\
- $\bv F_{ray} = \bv F_{ray}.normalize()$ * focal length; \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \\
+ $\bv F_{ray} = \bv F_{ray}.normalize()$ * focal length \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \\
  %// set $\norm {\bv F_{ray}} $ to focal length \\
- Define $\bv u$ and $\bv v$; \ \ \ \ \ \ \ \ 
+ Define $\bv u$ and $\bv v$ \ \ \ \ \ \ \ \ 
  //vectors orthogonal to $\bv F_{ray}$ that define image plane \\
- $\bv u$.normalize(); \\
- $\bv v$.normalize(); \\
+ $\bv u$.normalize() \\
+ $\bv v$.normalize() \\
  \For{v = 0 to rows}
  {
-   $\bv v_{ray}$ = $\bv v \times (v - v_c)$; \\
+   $\bv v_{ray}$ = $\bv v \times (v - v_c)$ \\
    \For{u = 0 to cols}
    {
-     $\bv u_{ray}$ = $\bv u \times (u - u_c)$; \\
-     $\bv P_{ray} = \bv F_{ray} + \bv u_{ray} + \bv v_{ray}$; \\
-     $\bv P_{img}$ = project($\bv P_{ray})$; \\
+     $\bv u_{ray}$ = $\bv u \times (u - u_c)$ \\
+     $\bv P_{ray} = \bv F_{ray} + \bv u_{ray} + \bv v_{ray}$ \\
+     $\bv P_{img}$ = project($\bv P_{ray})$ \\
      $\bv I(u,v)$ = bilinearInterpolate($\bv P_{img}$)
    }
  }
@@ -63,7 +63,7 @@ The focal length will be the desired focal length of the new perspective image. 
 
 In practice, the rays will be the same for a set of perspective image parameters.  Therefore the rays are pre-calculated in the form of a perspective pixel coordinate to omni pixel coordinate lookup table.
 
-\begin{figure}[b!]
+\begin{figure}[h]
   \centering
     \includegraphics[width=0.32\textwidth]{chapters/images/omni_raw_office}
     \includegraphics[width=0.32\textwidth]{chapters/images/unwrapped_office}
@@ -72,7 +72,7 @@ In practice, the rays will be the same for a set of perspective image parameters
   \label{fig:omni_images}
 \end{figure}
 
-The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is convenient, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. 
+The advantage of this algorithm is that the perspective image plane is very configurable.  It is possible to define image center direction, image plane orientation about the optical axis, resolution and focal length (which in turn defines field of view).  Therefore it is convenient, given that the omni camera is mounted near another camera to be calibrated against, to define an overlapping field of view with that other camera. An illustration of the original, unwrapped and undistorted perspective image can be seen in Fig. \ref{fig:omni_images}.
 
 \section{Online validation of extrinsic calibration}
 \label{sec:verification_tool}
@@ -85,8 +85,8 @@ Using the stereo camera, it is possible to verify the extrinsic calibration with
   \caption{Visualization of the extrinsic verification tool. This is a cropped image of the unwrapped omni image.  The white square represents the field of view of the stereo camera.  Stereo points have been reprojected into this image and overlayed onto the matching keypoints from the omni image. }
   \label{fig:circ_matches}
 \end{figure}
-
-A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  They are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a frame rate of about 1-2Hz (low frame rate due to feature extraction and circular matching).  This is useful for verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
+\newpage
+A verification tool was developed to perform this operation.  Circular matching is done between left stereo frame, right stereo frame and the unwrapped omni image, to remove outliers.  Circular matching is described in detail in Section \ref{subsec:circular_matching}. Stereo matches are used to generate 3D points.  These points are transformed to the omni camera frame, and then projected into the image.  They are visualized with lines drawn to their corresponding match from the omni image.  Reprojection error over all points is calculated and also visualized.  This program can run online, at a frame rate of about 1-2Hz (low frame rate due to feature extraction and circular matching).  This is useful for verifying the extrinsic calibration and demonstrating online that omni/stereo matching is successful.
 
 This tool also serves a second purpose; mainly to log all of the 2D omni points and corresponding 3D stereo points.  From this data, a second extrinsic refinement could be performed, by minimizing the reprojection error over all points.  This calibration uses the known geometry of the stereo camera as opposed to known geometry of the checkerboard.  This means that any feature matched in both stereo frames and omni camera frame can be used as a data point for calibration.
 
@@ -140,6 +140,9 @@ For Table \ref{tab:geometry}, the rough measurement of the stereo camera positio
 %Optimized using Outdoors & 13.82 & 0.634 \\
 %Optimized using Both & 0.533 & 0.968 \\ 
 
+
+Table \ref{tab:reprojection_error} shows that when only optimizing on indoors or outdoors datasets, the reprojection error was very high in the area not used for optimization.  It also shows very low reprojection error when optimizing using both datasets (less then 1.0 pixels).  This verifies that points over a wide range of distances is required for calibration, and it also shows an excellent overall calibration result.
+
 \begin{table}[H]
     \begin{tabular}{ p{6.5cm} r r r} % p{5cm} |}
     \toprule
@@ -157,9 +160,7 @@ For Table \ref{tab:geometry}, the rough measurement of the stereo camera positio
   \label{tab:geometry}
 \end{table}
 
-Table \ref{tab:reprojection_error} shows that when only optimizing on indoors or outdoors datasets, the reprojection error was very high in the area not used for optimization.  It also shows very low reprojection error when optimizing using both datasets (less then 1.0 pixels).  This verifies that points over a wide range of distances is required for calibration, and it also shows an excellent overall calibration result.
-
-Table \ref{tab:geometry} reflects the same result as Table \ref{tab:reprojection_error}.  The geometry of 'Indoors' and 'Outdoors' are quite clearly wrong.  Comparing the rough measurement with the optimization of both datasets, all values are within 10cm, which is expected.  ``Dataset for evaluation'', which should be most accurate, is also close to both measured values and ``both'' datasets.
+Table \ref{tab:geometry} reflects the same result as Table \ref{tab:reprojection_error}.  The geometry of 'Indoors' and 'Outdoors' are quite clearly wrong.  This is likely due to the lack of points as mentioned before for a good calibration.  Comparing the rough measurement with the optimization of both datasets, all values are within 10cm, which is expected.  ``Dataset for evaluation'', which should be most accurate, is also close to both measured values and ``both'' datasets.
 
 These results show that a good calibration, both in terms of reprojection error and geometrical accuracy can be obtained by calibrating using data points over a wide range of depth. Details of the exact calibration procedure used for evaluation can be found in Section \ref{subsubsec:actual_calibation}.
 

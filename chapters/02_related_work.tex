@@ -13,7 +13,7 @@
 
 Throughout this work the notion of rigid body transformations and coordinate frames will be used to describe relative motion of bodies.  A rigid body is a solid body where deformation is neglected.  A rigid body transformation is a transformation of some vector space which preserves distances between every pair of points, thus preserving the solid body assumption of rigid bodies. In this work rigid body transformations of 3 dimensional space $\mathbb{R}^3$ will be considered.
 
-A transformation can be described by a rotation followed by a translation.  For $\mathbb{R}^3$ space, there are 3 axes of rotation and 3 axes of translation, and therefore a transformation has 6 degrees of freedom.  These transformations, also known as  'poses', may be described by the special euclidean group $SE(3)$.  Special euclidean groups and Lie Algebra will be covered in \ref{sec:lie_group}.
+A transformation can be described by a rotation followed by a translation.  For $\mathbb{R}^3$ space, there are 3 axes of rotation and 3 axes of translation, and therefore a transformation has 6 degrees of freedom.  These transformations, also known as  poses, may be described by the special euclidean group $SE(3)$.  Special euclidean groups and Lie Algebra will be covered in Section \ref{sec:lie_group}.
 
 There are multiple ways to parameterize a rigid body transformation, as different representations for rotations exist.  A common representation is to add a forth homogeneous coordinate and use a 4x4 matrix as follows:
 \begin{align}
@@ -24,9 +24,9 @@ There are multiple ways to parameterize a rigid body transformation, as differen
                &        &   & t_z \\ \hline
              0 & 0      & 0 & 1 \end{array} \right) 
 \end{align}
-R is a 3x3 rotation matrix and $t$ is a 3x1 translation vector.  The forth coordinate can be thought of as the scale, however in this work it will always be set to unity.  This representation means 12 parameters for one rigid body transform, which is very much overparameterization, however this representation allows easier transform composition as when using multiple coordinate systems.
+R is a 3x3 rotation matrix and $t$ is a 3x1 translation vector.  The forth coordinate can be thought of as the scale, however in this work it will always be set to unity.  This representation means 12 parameters for one rigid body transformation, which is very much overparameterization, however this representation allows easier transformation composition as when using multiple coordinate systems.
 
-Multiple coordinate systems are used to represent 3D data in different reference frames.  A reference frame is exactly the same as a coordinate system, it can be imagined as being rigidly attached to a solid body.
+Multiple coordinate systems are used to represent 3D data in different reference frames.  A reference frame is exactly the same as a coordinate system, it can be imagined as being rigidly attached to the solid body.
 
 \begin{figure}[h]
   \centering
@@ -154,7 +154,7 @@ The pinhole camera model assumes the camera to be a sealed box with a pinhole ap
   \label{fig:pinhole_normal}
 \end{figure}
 
-For all intents and purposes, this model can be redrawn as in Fig. \ref{fig:pinhole_normal}. The image plane is inverted and shown reflected in front the of the camera.  In addition it is helpful to express the focal length differently.  Image plane coordinates need to be converted to sensor coordinates (that is, pixel coordinates; u,v).  This can be determined given the image sensor size and its resolution.  As this is linear operation, this conversion may be applied to the metric focal length and thus focal length expressed in pixel units.  Given Fig. \ref{fig:pinhole_normal} and the focal length expressed in pixel units, image coordinates and world coordinates may then be related as follows: 
+For all intents and purposes, this model can be redrawn as in Fig. \ref{fig:pinhole_normal}. The image plane is inverted and shown reflected in front the of the camera.  In addition it is helpful to express the focal length differently.  Image plane coordinates need to be converted to sensor coordinates (that is, pixel coordinates; $u$,$v$).  This can be determined given the image sensor size and its resolution.  As this is linear operation, this conversion may be applied to the metric focal length and thus focal length expressed in pixel units.  Given Fig. \ref{fig:pinhole_normal} and the focal length expressed in pixel units, image coordinates and world coordinates may then be related as follows: 
 
 \begin{align}
   \dfrac{u}{f_x} = \dfrac{x}{z}
@@ -168,9 +168,10 @@ Take note that the principle point (center of image) will not be aligned exactly
 \subsection{Lense Distortion}
 \label{subsec:lense_distortion}
 
-The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is often used to focus more light rays onto the sensor and allow a sharper image.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  reference shows how to correct for lense distortion given a set of distortion parameters associated with a camera.  These coefficients may be determined through calibration.  Fig. \ref{fig:lense_distortion} shows an example of lense distortion and how it can be compensated for.
+The problem with using a pinhole camera in practice is that it does not allow enough light to into the camera, requiring longer exposure time and therefore blurring in the presence of movement. Therefore a double convex lense is often used to focus more light rays onto the sensor and allow a sharper image.  The pinhole camera model may still be used, however now lense distortion needs to be accounted for.  Devernay\cite{devernay_01} showed how to correct for lense distortion given a set of distortion parameters associated with a camera.  These coefficients may be determined through calibration.  Fig. \ref{fig:lense_distortion} shows an example of lense distortion and how it can be compensated for.
 
-Calibration of focal lengths, principle points and distortion coefficients can all be done in one step using a checkerboard of known geometry.  This is called intrinsic calibration.\cite{devernay_01}
+
+Calibration of focal lengths, principle points and distortion coefficients can all be done in one step using a checkerboard of known geometry.  This is called intrinsic calibration.
 
 %When undistorting the image it is not uncommon that parts of the new image around the border will contain no information.  This is overcome by cropping and resizing the image.  This affects calibrated focal length parameters.  However when remapping a new image, new focal lengths can also be determined.
 
@@ -278,7 +279,7 @@ Where $b$ is the baseline; the distance between the two stereo cameras.
 
 Having determined the depth, x and y coordinates may easily be determined using the pinhole camera model.
 
-This is a very straightforward approach to stereo triangulation.  In practice this can be improved by feature point detection with subpixel accuracy, disparity interpolation or dense stereo matching.
+This is a very straightforward approach to stereo triangulation.  In practice this can be improved by feature point detection with subpixel accuracy (for example SIFT\cite{sift_04}), disparity interpolation or dense stereo matching\cite{dense_match}.
 
 %TODO cite stereo disparity
 
@@ -286,7 +287,7 @@ This is a very straightforward approach to stereo triangulation.  In practice th
 
 The omnidirection camera uses a lenses and mirrors to direct light from a 360$^{\circ}$ viewing angle onto one image plane.  The resulting image is in the shape as a donut, with blind spots in the middle and around the edges. Fig. \ref{fig:omni_donut}.
 
-In order to project points from image to world and world to image coordiantes, the omnidirectional camera model described by Scaramuzza et al. \cite{scaramuzza_06} was used and their Matlab toolbox \cite{scaramuzza_06_02} was utilized for calibration. Mei and Rives also provide a different camera model for omnidirectional cameras.
+In order to project points from image to world and world to image coordiantes, the omnidirectional camera model described by Scaramuzza et al. \cite{scaramuzza_06} was used and their Matlab toolbox \cite{scaramuzza_06_02} was utilized for calibration. Mei and Rives\cite{omni_07} also provide a different camera model for omnidirectional cameras.
 
 Given the camera model, the image may be reprojected to a spherical image (for example see Fig. \ref{fig:unwrapped}), or to a perspective image (see Section \ref{sec:perspective_from_donut}).  For points projected to world coordinates, the omni camera frame is shown in Fig. \ref{fig:omni_coord_sys}.
 
@@ -322,7 +323,7 @@ For contributions of this work, namely the camera extrinsic calibration and loop
 
 \subsection{Feature Matching}
 
-Given two feature descriptors from different images, some test needs to be performed to evaluate a 'likeness' between the two features, such that they may be associated as being the same feature patch or not.
+Given two feature descriptors from different images, some test needs to be performed to evaluate a 'likeness' between the two features, such that they may be associated as being the same feature patch or not.  This process is called feature matching.
 
 This process varies greatly depending on the feature descriptor selected, as descriptors encode information differently.  For SIFT and SURF, the descriptor contains a vector describing histograms of image gradients detected at or near the feature point.  Vectors can be tested by simply performing a vector distance calculation.
 
@@ -336,7 +337,6 @@ For this work the matching functions provided by SIFTGPU were utilised.
 A common operation that arises in geometry estimation in computer vision is that given a corresponding point pair, calculate the distance between the two points given that they can both be projected into the same reference frame.  A straightforward approach would be to estimate the full 3D position of each point, transform one of them into the same reference frame as the other, and calculate euclidean distance.  This is a valid approach, although some drawbacks exist.  If the 3D position of the point has not been determined accurately, for instance the depth estimation of a very distant point, then this error will be introduced into the distance measurement.  The two points may be closely aligned from the perspective of the camera, but if the 3D estimation is wrong, this correspondance will have a high error associated with it.
 
 Reprojection error compensates for this problem.  To calculate reprojection error both points are transformed to the reference frame of the camera, and then projected into image coordinates using the camera model.  A distance can then be measured in pixels between where the two points occur in the image.  This much more accurately models the precision of the camera sensor.
-%TODO cite reprojection error
 
 \subsection{RANSAC}
 \label{subsec:RANSAC}
@@ -348,7 +348,7 @@ Random Sample Consensus (RANSAC)\cite{ransac} is an iterative method for determi
  \item Fit the model to the data points selected
  \item Compare all other points with this model.  Classify points as either being inliers or outliers based on a predefined threshold distance to the model
  \item Remember model and inlier count, iterate
- \item After iteration finishes, use the best model i.e. the one with most inliers.
+ \item After iteration finishes, use the best model, that is, the one with most inliers.
  \item (Optional) Refit the model using all inliers
 \end{enumerate}
 
@@ -400,11 +400,11 @@ Algorithms have been proposed by Umeyama\cite{umeyama} and Horn\cite{horn_87} to
 \section{Place Recognition}
 \label{sec:bag_of_words}
 
-Given a set of images, place recognition is the task of 'recognizing' if a new image matches to one or more images in the set.  Unlike the geometry estimation algorithms, this returns a simple true false, or probability match, rather than a frame to frame transformation.  Often for place recognition a wide range of differing images is selected as the set to 'train' on, and by detecting if a new image matches an existing one, then the location of the camera that took the new image should be roughly close to that of the matched image in the training set.
+Given a set of images, place recognition is the task of 'recognizing' if a new image matches to one or more images in the set.  Unlike the geometry estimation algorithms, this returns a simple true false, or probability of match, rather than a frame to frame transformation.  Often for place recognition a wide range of differing images is selected as the set to 'train' on, and by detecting if a new image matches an existing one, then the location of the camera that took the new image should be roughly close to that of the matched image in the training set.
 
 The bag of words approach\cite{bag_of_words} uses clustering of features in descriptor space.  This technique taken from object classification.  Similar features are grouped together and put into different bins to form a histogram which describes the entire image.  These histograms may be represented as vectors and compared using vector distance.  In addition many histograms can be stored in a tree structure such as a KD tree\cite{kdtree} to reduce searching time.
 
-More sophistiacted approaches exist, including FABMAP\cite{fabmap} or using a vocabulary tree\cite{vocab_tree} approach.  There has also been some work in address invariance to lighting conditions, for example DIRD place recognition.  This library uses a new feature descriptor that has been learnt especially for place recognition with lighting condition invariance in mind.
+More sophistiacted approaches exist, including FABMAP\cite{fabmap} or using a vocabulary tree\cite{vocab_tree} approach.  There has also been some work in addressing invariance to lighting conditions, for example DIRD place recognition\cite{lategahn_13}.  This library uses a new feature descriptor that has been learnt especially for place recognition with lighting condition invariance in mind.
 
 \section{SLAM}
 \label{sec:slam}
@@ -494,7 +494,6 @@ A common problem with visual SLAM systems is that the pose estimation between fr
   \caption{Loop Closure}
   \label{fig:loop_closure}
 \end{figure}
-%TODO: change this with a before after shots from presentation g2o graph
 
 It is possible to compensate for this drift by performing 'large loop closures'. After returning to a previous location, the current frame can be registered against an earlier recorded frame at this same location using the standard pipeline of pose estimation based on shared landmark observations.  The current pose is then corrected to the correct position by adjusting all of the previous poses slightly.  This adjustment may be performed efficiently and optimally using graph optimization.
 
