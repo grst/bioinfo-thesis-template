@@ -22,4 +22,5 @@
 *.out
 *.synctex.gz
 session.tks
-main.pdf
+main.run.xml
+main-blx.bib
