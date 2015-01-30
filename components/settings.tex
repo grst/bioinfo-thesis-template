@@ -1,32 +1,59 @@
+% Included by MAIN.TEX
+% Defines the settings for the CAMP report document
 
-%\renewcommand{\sectfont}{\normalfont \bfseries}        % Schriftart der Kopfzeile
+\renewcommand{\sectfont}{\normalfont \bfseries}        % Schriftart der Kopfzeile
 
 % manipulate footer
 %\usepackage{scrpage2}
 %\pagestyle{scrheadings}
-%\ifoot[\footertext]{\footertext} % \footertext set in INFO.TEX
+%\ifoot[\footertext]{\footertext\thepage} % \footertext set in INFO.TEX
 %\setkomafont{pagehead}{\normalfont\rmfamily}
 %\setkomafont{pagenumber}{\normalfont\rmfamily}
+\usepackage[]{geometry}
+
+\usepackage{fancyhdr}
+\renewcommand*{\footrulewidth}{0pt}
+\fancyhf{}
+
+
+% use german characters as well
+\usepackage[utf8]{inputenc}       % allow Latin1 characters
+\usepackage[T1]{fontenc}      % Unterst�tzung f�r Europ�ische-Zeichen-Ausgabe
+\usepackage{ae}   
 
 %% allow sophisticated control structures
 \usepackage{ifthen}
 
+%blind text 
+\usepackage{lipsum}
+
 % use Palatino as default font
-%\usepackage{palatino}
+\usepackage{palatino}
 
 % enable special PostScript fonts
 %\usepackage{pifont}
 
 % make thumbnails
-%% FIXME: what does it do. do i need it?
-%\usepackage{thumbpdf}
+\usepackage{thumbpdf}
 
 %to use the subfigures
-%\usepackage{subfigure} %superseeded by subfig
-\usepackage[lofdepth,lotdepth]{subfig}
+\usepackage{subfigure}
+
+\usepackage{pgf}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+
+%drawing
+\usepackage{tikz}
+
+%multiple commands
+\usepackage{savesym}
 
 
 \usepackage{colortbl}
+
+%improved tablese
+\usepackage{array}
 
 
 %% show program code\ldots
@@ -36,21 +63,50 @@
 %% enable TUM symbols on title page
 \usepackage{styles/tumlogo}
 
-
 \usepackage{multirow}
-\usepackage{longtable}
+\usepackage{fancyvrb}
 
 %% use colors
 \usepackage{color}
+
+
+%% load german babel package for german abstract
+%\usepackage[german,american]{}
+\usepackage[english,american]{babel}
+\selectlanguage{english}
+\usepackage[autostyle]{csquotes}
+\MakeOuterQuote{"} 			%Abk�rzung f�r Anf�hrungszeichen
+
 
 %% make fancy math
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{siunitx}
+\sisetup{
+detect-all = true,
+per-mode = symbol,
+list-final-separator = {, },
+list-pair-separator = {, },
+range-phrase = --,
+}
+\DeclareSIUnit\bases{b} %for kilo bases
+\DeclareSIUnit\bp{bp} %basepairs
+\DeclareSIUnit\units{u} %enzyme units
+\DeclareSIUnit\od{OD} %enzyme units
+\DeclareSIUnit\Molar{M} %enzyme units
+\DeclareSIUnit\cfu{cfu} %colony forming units
+\DeclareSIQualifier\sixhundred{600} % for OD_600
+\DeclareSIQualifier\bradford{595} % for OD_595
+\DeclareSIQualifier\qDirt{320} 
+\DeclareSIQualifier\qDna{280} 
+\DeclareSIQualifier\qProtein{260} 
 \usepackage{textcomp}
-%\usepackage{yhmath} %  fuer die adots 
+\usepackage[Symbol]{upgreek}
+\usepackage{yhmath} % f�r die adots 
 %% mark text as preliminary
 %\usepackage[draft,german,scrtime]{prelim2e}
+\usepackage{caption}
 
 %% create an index
 \usepackage{makeidx}
@@ -58,38 +114,45 @@
 % for the program environment
 \usepackage{float}
 
-%% load german babel package for german abstract
-%\usepackage[german,american]{babel}
-\usepackage[german,english]{babel}
-\selectlanguage{english}
-
-% use german characters as well
-\usepackage[utf8]{inputenc}
 
 % use initals dropped caps - doesn't work with PDF
-%%%\usepackage{dropping}
+%\usepackage{dropping}
+
+%advanced paragraph settings
+\tolerance 1414
+\hbadness 1414
+\emergencystretch 1.5em
+\hfuzz 0.3pt
+\widowpenalty=10000
+\vfuzz \hfuzz
+\raggedbottom
+
+%linespread
+\usepackage{setspace}
+
+%font size of figure-captions
+\setkomafont{caption}{\small}
+\setkomafont{captionlabel}{\usekomafont{caption}}
 
 
-%\usepackage{styles/shortoverview}
+
+\usepackage{styles/shortoverview}
 %----------------------------------------------------
 %      Graphics and Hyperlinks
 %----------------------------------------------------
 
-% %% check for pdfTeX
-% \ifx\pdftexversion\undefined
-%  %% use PostScript graphics
-%  \usepackage[dvips]{graphicx}
-%  \DeclareGraphicsExtensions{.eps,.epsi}
-%  \graphicspath{{figures/}{figures/review}} 
-%  %% allow rotations
-%  \usepackage{rotating}
-%  %% mark pages as draft copies
-%  %\usepackage[english,all,light]{draftcopy}
-%  %% use hypertex version of hyperref
-%  \usepackage[hypertex,hyperindex=false,colorlinks=false]{hyperref}
-% \else 
-
- %% reduce output size \pdfcompresslevel=9
+%% check for pdfTeX
+\ifx\pdftexversion\undefined
+ %% use PostScript graphics
+ \DeclareGraphicsExtensions{.eps,.epsi}
+ \graphicspath{{figures/}{figures/review}} 
+ %% allow rotations
+ \usepackage{rotating}
+ %% mark pages as draft copies
+ %\usepackage[english,all,light]{draftcopy}
+ %% use hypertex version of hyperref
+ \usepackage[hypertex,hyperindex=false,colorlinks=false]{hyperref}
+\else %% reduce output size \pdfcompresslevel=9
  %% declare pdfinfo
  %\pdfinfo { 
  %  /Title (my title) 
@@ -99,37 +162,39 @@
  %  /Keywords (my keywords)
  %}
  %% use pdf or jpg graphics
- \usepackage[pdftex]{graphicx}
- \DeclareGraphicsExtensions{.jpg,.JPG,.png,.pdf,.eps}
- \graphicspath{{figures/}} 
+ %\usepackage[pdftex]{graphicx}
+% \DeclareGraphicsExtensions{.jpg,.JPG,.png,.pdf,.eps}
+ %\graphicspath{{figures/}} 
+ 
+ %% Load float package, for enabling floating extensions
+ \usepackage{float}
  
  %% allow rotations
  \usepackage{rotating}
  %% use pdftex version of hyperref
-
-
-
-% not for print version!
- % \usepackage[pdftex,colorlinks=true,linkcolor=red,citecolor=red,%
- % anchorcolor=red,urlcolor=red,bookmarks=true,pagebackref,%
- % bookmarksopen=true,bookmarksopenlevel=0,plainpages=false,%
- % bookmarksnumbered=true,hyperindex=false,pdfstartview=%
- % ]{hyperref}
-
-
-
-
+ \usepackage[pdftex,colorlinks=false,linkcolor=red,citecolor=red,%
+ anchorcolor=red,urlcolor=red,bookmarks=true,%
+ bookmarksopen=true,bookmarksopenlevel=0,plainpages=false%
+ bookmarksnumbered=true,hyperindex=false,pdfstartview=%
+ ]{hyperref}
 %
 %\usepackage[pdftex,colorlinks=false,linkcolor=red,citecolor=red,%
 % anchorcolor=red,urlcolor=red,bookmarks=true,%
 % bookmarksopen=true,bookmarksopenlevel=0,plainpages=false%
 % bookmarksnumbered=true,hyperindex=false,pdfstartview=%
 % ]{hyperref}
-%\fi
+\fi
 
-%% we need this to set up the bibliography PDF bookmarks on top level rather
-%% than as part of appendix
-\usepackage{bookmark}
+
+%Fixme
+\usepackage{fixme}					% insert fixmes
+\fxsetup{
+     author=GS,                                            % name to prepend before all annotations
+     layout=margin,
+     theme=color
+}
+\restoresymbol{FIXME}{comment}
+
 
 
 %% Fancy chapters
@@ -140,51 +205,7 @@
 %\usepackage[avantgarde]{quotchap}
 
 % set the bibliography style
+\usepackage[style=authoryear,backend=bibtex,bibencoding=utf8,mincitenames=2,maxcitenames=3, hyperref=true,url=false,eprint=false]{biblatex}
 %\bibliographystyle{styles/bauermaNum}
 %\bibliographystyle{alpha}
-\bibliographystyle{plain}
-
-
-
-
-%% not sure what they do and if I need them:
-% \usepackage{soul}
-% \usepackage{wrapfig}
-%\usepackage[T1]{fontenc}
-\usepackage{fixltx2e}
-%\usepackage{textcomp}
-%\usepackage{marvosym}
-%\usepackage{wasysym}
-%\usepackage{latexsym}
-%\usepackage{amssymb}
-
-
-% \hypersetup{
-%   pdfkeywords={},
-%   pdfsubject={},
-%   pdfcreator={Emacs Org-mode version 7.8.03}}
-
-\usepackage{xspace}
-\xspaceaddexceptions{]\}}
-
-
-%% remove comment for final version
-%\newcommand{\final}{}
-
-\ifx\final\undefined
-
-\usepackage[firstpage]{draftwatermark}
-\SetWatermarkLightness{0.5}
-\SetWatermarkScale{5.0}
-
-\fi
-
-
-\addtokomafont{caption}{\small}
-\addtokomafont{captionlabel}{\small\bfseries}
-
-\usepackage{chngcntr}
-\counterwithout{footnote}{chapter}
-
-
-%\usepackage{subcaption}
+%\bibliographystyle{plain}

@@ -91,30 +91,31 @@
 
 % referecing figures
 
-\newcommand{\refFigure}[1]{%
-Figure \ref{#1}%
+\newcommand{\refFigure}[1]{ %label
+	figure \ref{#1}
 }
-\newcommand{\refChapter}[1]{%
-Chapter \ref{#1}%
-}
-
-\newcommand{\refSection}[1]{%
-Section \ref{#1}%
+\newcommand{\refChapter}[1]{ %label
+	chapter \ref{#1}
 }
 
-\newcommand{\refEqn}[1]{%
-Equation \ref{#1}%
+\newcommand{\refSection}[1]{ %label
+	section \ref{#1}
+}
+
+\newcommand{\refParagraph}[1]{ %label
+	paragraph \ref{#1}
+}
+
+\newcommand{\refEquation}[1]{ %label
+	equation \ref{#1}
+}
+
+\newcommand{\refTable}[1]{ %label
+	table \ref{#1}
 }
 
 
 
-\newcommand{\pr}{\mathrm{p}}
-\newcommand{\prc}{\mathrm{p}_{\mathrm{c}}}
-\newcommand{\pru}{\mathrm{p}_{\mathrm{u}}}
-
-\newcommand{\domain}[1]{\mathcal{D}(#1)}
-
-\newcommand{\ovl}[1]{\overline{#1}}
 
 \newcommand{\rigidTransform}[2]
 {
@@ -126,8 +127,7 @@ Equation \ref{#1}%
  {\texttt{#1}}
 
 % comment that appears on the border - very practical !!!
-%\newcommand{\comment}[1]{\marginpar{\raggedright \noindent \footnotesize {\sl #1} }}
-\newcommand{\comment}[1]{}
+\newcommand{\comment}[1]{\marginpar{\raggedright \noindent \footnotesize {\sl #1} }}
 
 % page clearing
 \newcommand{\clearemptydoublepage}{%
@@ -140,5 +140,3 @@ Equation \ref{#1}%
 
 
 \newcommand{\etAl}{\emph{et al.}\mbox{ }}
-
-\newcommand{\CC}{C\nolinebreak\hspace{-.05em}\raisebox{.4ex}{\tiny\bf +}\nolinebreak\hspace{-.10em}\raisebox{.4ex}{\tiny\bf +}}

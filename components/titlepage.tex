@@ -1,62 +1,149 @@
-% The titlepage for the CAMP report document.
-% Included by MAIN.TEX
+\newgeometry{top=4cm, bottom=4cm, left=2cm, right=2cm}
+%LMU Logo
+\ifx \lmulogo \undefined
+\def\lmulogo{
+%%L
+\tikz \draw[fill=black,scale=.366] 
+(0.08122204mm,29.03835848mm) -- (2.8457538mm,29.03835848mm)
+                             -- (2.8457538mm,2.90315229mm)
+                             -- (10.89378602mm,2.90315229mm)
+                             -- (10.89378602mm,0.81854444mm)
+                             -- (0.08122204mm,0.81854444mm)
+                             -- (0.08122204mm,29.03835848mm)
+%%M
+(31.34365575mm,29.03835848mm) -- (40.39552811mm,29.03835848mm)
+                              -- (40.39552811mm,0.81854444mm)
+                              -- (34.95091986mm,0.81854444mm)
+                              -- (34.95091986mm,24.57707873mm)
+                              -- (29.70964065mm,0.81854444mm)
+                              -- (24.05197858mm,0.81854444mm)
+(18.72931175mm,24.57707873mm) -- (18.72931175mm,0.81854444mm)
+                              -- (13.74283667mm,0.81854444mm)
+                              -- (13.74283667mm,29.03835848mm)
+                              -- (22.83628113mm,29.03835848mm)
+                              -- (29.70964065mm,0.81854444mm)
+                              -- (24.05197858mm,0.81854444mm)
+%%U
+(43.8337035mm,11.57469839mm)  -- (43.8337035mm,29.03835848mm)
+                              -- (53.5133069mm,29.03835848mm)
+                              -- (53.5133069mm,10.61380834mm)
+                              .. controls (53.5133069mm,9.30748209mm) and
+(53.81420182mm,8.37635215mm)  .. (54.41451512mm,7.82074949mm)
+                              .. controls (55.01615222mm,7.26638152mm) and
+(55.8167015mm,6.98786101mm)   .. (56.82353289mm,6.98786101mm)
+                              .. controls (57.83038975mm,6.98786101mm) and
+(58.64085472mm,7.26638152mm)  .. (59.25500417mm,7.82074949mm)
+                              .. controls (59.86898816mm,8.37635215mm) and
+(60.17857682mm,9.30748209mm)  .. (60.17857682mm,10.61380834mm)
+                              -- (60.17857682mm,29.03835848mm)
+                              -- (60.17857682mm,29.03835848mm)
+                              -- (69.81459697mm,29.03835848mm)
+                              -- (69.81459697mm,11.57469839mm)
+                              .. controls (69.81459697mm,9.4888431mm) and 
+(69.50010775mm,7.7187021mm)   .. (68.87116748mm,6.25938749mm)
+                              .. controls (68.24336007mm,4.80020018mm) and
+(67.36335794mm,3.6142509mm)   .. (66.23211574mm,2.6944242mm)
+                              .. controls (65.10091173mm,1.77701599mm) and
+(63.73231653mm,1.11073576mm)  .. (62.12634287mm,0.69548167mm)
+                              .. controls (60.51792529mm,0.27782183mm) and
+(58.7515312mm,0.06905555mm)   .. (56.82353289mm,0.06905555mm)
+                              .. controls (54.92412336mm,0.06905555mm) and
+(53.17889718mm,0.27782183mm)  .. (51.58667057mm,0.69548167mm)
+                              .. controls (49.99430394mm,1.11073576mm) and
+(48.62318845mm,1.77701599mm)  .. (47.47833922mm,2.6944242mm)
+                              .. controls (46.33221711mm,3.6142509mm) and
+(45.43858249mm,4.80020018mm)  .. (44.79585698mm,6.25938749mm)
+                              .. controls (44.15448073mm,7.7187021mm) and 
+(43.8337035mm,9.4888431mm)    .. (43.8337035mm,11.57469839mm);
+}
+\fi
 
+%%TUM Logo
+\ifx \tumlogo \undefined
+\def\tumlogo{
+\tikz \draw[fill=black,scale=0.3]
+(5.9978625mm,29.15273687mm) -- (5.9978625mm,0.03523687mm)
+                            -- (12.3128625mm,0.03523687mm)
+                            -- (12.3128625mm,29.10898687mm)
+                            -- (19.3278625mm,29.10898687mm)
+                            -- (19.3278625mm,0.03523687mm)
+                            -- (39.4128625mm,0.03523687mm)
+                            -- (39.4128625mm,28.80148687mm)
+                            -- (46.5591125mm,28.80148687mm)
+                            -- (46.5591125mm,0.04273687mm)
+                            -- (53.1828625mm,0.04273687mm)
+                            -- (53.1828625mm,28.80148687mm)
+                            -- (60.4178625mm,28.80148687mm)
+                            -- (60.4178625mm,0.04273687mm)
+                            -- (67.0403625mm,0.04273687mm)
+                            -- (67.0403625mm,35.46773687mm)
+                            -- (33.0553625mm,35.46773687mm)
+                            -- (33.0553625mm,6.48148687mm)
+                            -- (25.7753625mm,6.48148687mm)
+                            -- (25.7753625mm,35.42523687mm)
+                            -- (-0.0108875mm,35.42523687mm)
+                            -- (-0.0108875mm,29.15273687mm)
+                            -- (5.9978625mm,29.15273687mm);
+}
+\fi
 
-% --------------------------------------------------
-% The title page
-% --------------------------------------------------
+%%height of tum logo / height of lmu logo = 1.219946
+\ifx \Universities \undefined
+\def\Universities{
+  \hbox to \textwidth {
+    \raisebox{-11mm}{\lmulogo}
+    \hskip4mm
+    \hbox {\vtop{\vskip1pt
+       \hbox{
+         \Large\sc \hskip2pt Ludwig-Maximilians-Universit\"at
+       }
+       \vskip4pt
+       \hbox{
+         \Large\sc Technische Universit\"at M\"unchen
+       }
+     }
+    }
+    \hskip3mm
+    \raisebox{-11mm}{\tumlogo}
+  }
+}
+\fi
 
-% correct BCOR - undo at the end !!!
-% \def\bcorcor{0.15cm}
-% \addtolength{\hoffset}{\bcorcor}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Title Page
+%% derived from deckblattAbschlussarbeitBioinformatik.sty
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
 \thispagestyle{empty}
-
-\vspace{7mm}
-\begin{center}
-  \oTUM{4cm}
-
-  \vspace{5mm}
-  \huge FAKULT{\"A}T F{\"U}R INFORMATIK\\
-  \vspace{0.5cm}
-  \large DER TECHNISCHEN UNIVERSIT{\"A}T M{\"U}NCHEN
+\centerline{\Universities}
+\vfill
+\vspace{2cm}
+\begin{center}\LARGE
+  \textbf{\Lehrstuhl}                    % Institut; Lehrstuhl
 \end{center}
-\vspace{7mm}
-\begin{center}
-
-  {\Large \thedoctype}
-
-  \vspace{7mm}
-
-  {\LARGE \thetitle}\\
-
-  \vspace{5mm}
-
-  {\LARGE  \thetitleGer}\\
-
-  \vspace{10mm}
-
-  % \hfill
+\vfill
+\begin{center}\LARGE
+  \Doctype\\                           % Art der Arbeit
+  {\Large in Bioinformatik}\\*[2cm]
+  \begin{minipage}{10cm}
+    \begin{center}
+      \LARGE\textbf{\Mytitle}          % Titel der Arbeit
+    \end{center}
+  \end{minipage}
+  \vskip1cm
+  {\LARGE\textit{\Author}}            % Name des Studenten
+\end{center}
+\vfill
+\begin{center}\large
   \begin{tabular}{ll}
-    \Large Author:     & \Large \theauthor \\[2mm]
-    \Large Supervisor:    & \Large \thesupervisor\textsuperscript{1}\\[2mm]
-    \Large Advisor:	& \Large \theadvisor\textsuperscript{2}\\[2mm]
-    \Large Date:       & \Large \thedate
+    Aufgabensteller: & \Provider        % Name des Aufgabenstellers
+    \\
+    Betreuer:        & \Supervisor        % Name des Betreuers
+    \\
+    Abgabedatum:     & \Deadline        % Abgabedatum
   \end{tabular}
-
-  \vspace{5mm}
-
-  % \begin{figure}[h!]
-  %   \centering
-  %   \includegraphics[width=4cm]{styles/informat.png}
-  % \end{figure}
-
-  \vspace{10mm}
-
-  \textsuperscript{1}Technische Universit{\"a}t M{\"u}nchen\\
-  \textsuperscript{2}Bosch Research and Technology Center North America
-
 \end{center}
+\vskip1cm
 
-% undo BCOR correction
-% \addtolength{\hoffset}{\bcorcor}
+\clearemptydoublepage
+\restoregeometry
