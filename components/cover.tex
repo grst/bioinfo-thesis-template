@@ -15,51 +15,27 @@
 %--------------------------------------------------
 
 % correct BCOR - undo at the end !!!
-%\def\bcorcor{0.15cm}
-%\addtolength{\hoffset}{\bcorcor}
+\def\bcorcor{0.15cm}
+\addtolength{\hoffset}{\bcorcor}
 
 \thispagestyle{empty}
 
-\vspace{4cm}
-\begin{center}
-  \oTUM{4cm}
-
-  \vspace{5mm}
-  \huge FAKULT{\"A}T F{\"U}R INFORMATIK\\
-  \vspace{0.5cm}
-  \large DER TECHNISCHEN UNIVERSIT{\"A}T M{\"U}NCHEN\\
-  \vspace{1mm}
-
+\newgeometry{top=6cm} 
+\vfill
+\begin{center}\LARGE
+  \Doctype\\                           % Art der Arbeit
+  {\Large in Bioinformatik}\\*[2cm]
+  \begin{minipage}{10cm}
+    \begin{center}
+      \huge\textbf{\Mytitle}          % Titel der Arbeit
+    \end{center}
+  \end{minipage}
+  
+  \vspace{2cm}
+  {\LARGE\textit{\Author}}            % Name des Studenten
 \end{center}
+		
 
+\clearemptydoublepage
+\restoregeometry
 
-\vspace{15mm}
-\begin{center}
-
-  {\Large \thedoctype}
-
-  \vspace{20mm}
-
-  {\huge\bf \thetitle}\\%[3ex]
-
-
-  \vspace{15mm}
-
-
-  {\LARGE  \theauthor}
-
-
-  \ifx\final\undefined
-  {\Large Date of Draft: \today}
-  \else
-  \vspace{5mm}
-  \fi
-
-
-  \begin{figure}[h!]
-    \centering
-    \includegraphics[width=4cm]{styles/informat.png}
-  \end{figure}
-
-
-\end{center}
